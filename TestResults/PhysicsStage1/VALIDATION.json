@@ -1,0 +1,41 @@
+{
+  "ExistingSourceChanges": [],
+  "AutomationPassed": 20,
+  "CustomPlayable": false,
+  "AutomationFailed": 0,
+  "Head": "545ac69cd22517cd5b961152fe014e17be908179",
+  "AutomationSeconds": 148.908432,
+  "Date": "2026-10-17",
+  "AutomationSkipped": 0,
+  "Stage2Implemented": false,
+  "Stage0Preserved": true,
+  "Branch": "visual-overhaul-first-person",
+  "EditorBuild": "PASS",
+  "GameBuild": "PASS",
+  "NewSources": [
+    {
+      "Path": "D:\\Boring\\GitHub\\Road-To-F1-Visual\\RoadToF1\\Source\\RoadToF1\\KartPhysicsIntegrator.cpp",
+      "SHA256": "347381F472A92D91A1DDAD845330CDF783184A2B595C72A3E7039BE50F15DB31"
+    },
+    {
+      "Path": "D:\\Boring\\GitHub\\Road-To-F1-Visual\\RoadToF1\\Source\\RoadToF1\\KartPhysicsIntegrator.h",
+      "SHA256": "E0AC5A3B7EE9210501E76F60BFCDC18282E5D4FC379B4AF27334B76A896AD5AD"
+    },
+    {
+      "Path": "D:\\Boring\\GitHub\\Road-To-F1-Visual\\RoadToF1\\Source\\RoadToF1\\KartRigidBodyProbe.cpp",
+      "SHA256": "A7F3AAB49A23BE37339ED3F56ED13D2FC893016709CB2B65F512DB48C20A6E51"
+    },
+    {
+      "Path": "D:\\Boring\\GitHub\\Road-To-F1-Visual\\RoadToF1\\Source\\RoadToF1\\KartRigidBodyState.cpp",
+      "SHA256": "3F0E03DE42BA7142B9411137486E0EE3793F7ECB31EA25CD85082F772E26962E"
+    },
+    {
+      "Path": "D:\\Boring\\GitHub\\Road-To-F1-Visual\\RoadToF1\\Source\\RoadToF1\\KartRigidBodyState.h",
+      "SHA256": "DAFEADADC6E48709253904BDE1F2867E58F35969704944842AF6BD8EA1EED9E5"
+    },
+    {
+      "Path": "D:\\Boring\\GitHub\\Road-To-F1-Visual\\RoadToF1\\Source\\RoadToF1\\Tests\\KartPhysicsStage1Tests.cpp",
+      "SHA256": "952FE2F75DD51C797FF4BA926B9663A3FB0EB9A3B15D1DA9032CEFD2AA798DED"
+    }
+  ]
+}
