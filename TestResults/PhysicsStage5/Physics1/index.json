@@ -1,0 +1,232 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-ERDHE74",
+			"instance": "BDD771FE4E3B1A9842658EB273408168",
+			"instanceName": "DESKTOP-ERDHE74-6564",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 10 (22H2) [10.0.19045.6466] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 3080",
+			"cPUModel": "Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz",
+			"rAMInGB": 32,
+			"renderMode": "SM6",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.19-02.03.20",
+	"succeeded": 6,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 0.63785922527313232,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "Stage0Ownership",
+			"fullTestPath": "RoadToF1.Physics.Stage0Ownership",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"BDD771FE4E3B1A9842658EB273408168"
+			],
+			"duration": 0.13069909811019897,
+			"dateTime": "2026.10.19-02.03.19",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage1RigidBody",
+			"fullTestPath": "RoadToF1.Physics.Stage1RigidBody",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"BDD771FE4E3B1A9842658EB273408168"
+			],
+			"duration": 0.010403003543615341,
+			"dateTime": "2026.10.19-02.03.19",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Analytic check: 2kg, 10N, dt=0.1s -> v=50cm/s, x=5cm (semi-implicit Euler).",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.03.19"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Fixed dt=1/60: x=254.166666667cm, v=500.000000000cm/s; continuous x=250cm; first-order position error expected.",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.03.19"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Fixed dt=1/120: x=252.083333333cm, v=500.000000000cm/s; continuous x=250cm; first-order position error expected.",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.03.19"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage2Broadphase",
+			"fullTestPath": "RoadToF1.Physics.Stage2Broadphase",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"BDD771FE4E3B1A9842658EB273408168"
+			],
+			"duration": 0.14791560173034668,
+			"dateTime": "2026.10.19-02.03.19",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "STAGE2_STRESS seed=240217 proxies=500 snapshots=13 updates=6000 removals/replacements=4 exact_oracle_checks=26 opposite_order=PASS repeat=PASS height=15 nodes=999 reinserts=5935 total_pair_node_visits=196362 final_pairs=120",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.03.19"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage3Narrowphase",
+			"fullTestPath": "RoadToF1.Physics.Stage3Narrowphase",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"BDD771FE4E3B1A9842658EB273408168"
+			],
+			"duration": 0.085470497608184814,
+			"dateTime": "2026.10.19-02.03.19",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "STAGE3_STRESS seed=381028 cases=180 intersections=119 failed=0 nonfinite=0 gjk_iterations=656 epa_iterations=795 max_depth_error_cm=8.8817842e-15 symmetric_sphere_epa=4",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.03.19"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "STAGE3_CURVED cases=120 hits=92 failures=0 max_depth_error_cm=4.99825764e-05",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.03.19"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage4Manifolds",
+			"fullTestPath": "RoadToF1.Physics.Stage4Manifolds",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"BDD771FE4E3B1A9842658EB273408168"
+			],
+			"duration": 0.096938103437423706,
+			"dateTime": "2026.10.19-02.03.19",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "STAGE4_STRESS bodies=200 steps=12 active=99 reused=1364 new=636 invalidated=438 failures=0 max_points=4 edge_fixtures=55",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.03.19"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage5Solver",
+			"fullTestPath": "RoadToF1.Physics.Stage5Solver",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"BDD771FE4E3B1A9842658EB273408168"
+			],
+			"duration": 0.16643290221691132,
+			"dateTime": "2026.10.19-02.03.19",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Rest 1200 steps: max depth 0.100000000 cm, speed 1.440000000 cm/s, residual 0.000000000 cm/s",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.03.19"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Rest 1200 steps: max depth 0.100000000 cm, speed 1.440000000 cm/s, residual 0.000000000 cm/s",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.03.19"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

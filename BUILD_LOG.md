@@ -302,3 +302,8 @@
 - Editor and standalone Development builds PASS; diff/new-source whitespace checks PASS. All pre-existing source hashes unchanged. No new compiler warnings/errors; source discovery forced after initial cached list omitted new files. Unrelated layout/non-Windows SDK startup notices retained.
 - ManifoldProbe headless output verified (active1,reused4,new0,invalidated0,max4,failures0). Rendered/manual verification pending. Full file list, numerical contracts, cache lifecycle, limitations and Editor checklist: TestResults/PhysicsStage4/README.md.
 - STOP at Stage4. No Stage5 solver, impulses, warm starting, live custom physics, commit, push or merge. Await review.
+
+## 2026-10-18 — Physics Stage5 normal solver
+- Initial local safety checkpoint d92c539 preserves stages0-4 and visual assets. Added isolated transactional deterministic PGS normal solver; Legacy untouched.
+- All6 physics suites PASS; editor65.41s and standalone51.38s Development builds PASS.1200-step rest max penetration0.1cm/max correction speed1.44cm/s/exact replay.
+- Cold start, bounded Baumgarte bias; friction/restitution deferred to6. Report TestResults/PhysicsStage5/README.md. No push/merge.
