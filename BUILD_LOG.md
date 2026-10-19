@@ -312,3 +312,8 @@
 - Added bounded Coulomb static/dynamic friction, coupled tangent solve, thresholded restitution and surface presets. Legacy unchanged.
 - All7 physics suites PASS; Editor36.61s/standalone35.43s PASS. Sliding stop35.459594cm; resting stack max penetration0.1cm. No failed tests/manual claim.
 - Stage5 checkpoint e7c78c2. Stage6 report TestResults/PhysicsStage6/README.md. Continue7; no push/merge.
+
+## 2026-10-18 — Physics Stage7 isolated vehicle
+- Added stiff four-point kart support, rear drive/wheel angular state, combined slip grip, steering, braking/reverse/surfaces and load transfer through contact moments. No production modifications.
+- Expanded test found low-grip wheel runaway; fixed torque governor without changing safety bounds. Failed evidence retained.
+- Full26/26 project suites PASS159.04s; Editor5.65s/standalone76.31s PASS. Straight56.6474km/h, reverse14.924. Report PhysicsStage7. Custom still disabled; human feel unverified.
