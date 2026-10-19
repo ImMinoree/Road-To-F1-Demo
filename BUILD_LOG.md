@@ -317,3 +317,8 @@
 - Added stiff four-point kart support, rear drive/wheel angular state, combined slip grip, steering, braking/reverse/surfaces and load transfer through contact moments. No production modifications.
 - Expanded test found low-grip wheel runaway; fixed torque governor without changing safety bounds. Failed evidence retained.
 - Full26/26 project suites PASS159.04s; Editor5.65s/standalone76.31s PASS. Straight56.6474km/h, reverse14.924. Report PhysicsStage7. Custom still disabled; human feel unverified.
+
+## 2026-10-18 — Physics Stage8 physical view feedback
+- Added isolated mass-normalized impact/acceleration/angular/road/kerb camera output with comfort limits, exponential response and reset. Existing cameras untouched.
+- Full27/27 suites PASS159.33s; Editor53.62s/standalone76.85s PASS.30/60/120Hz equivalence and existing camera toggle verified automatically. Human comfort unverified.
+- Stage7 checkpoint89ab968. Stage8 report PhysicsStage8/README.md. Pre-integration baseline passed; Custom still rejected.
