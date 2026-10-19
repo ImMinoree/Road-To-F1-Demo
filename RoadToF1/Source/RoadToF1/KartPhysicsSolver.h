@@ -1,12 +1,14 @@
 #pragma once
 #include "KartRigidBodyState.h"
 #include "KartPhysicsContactManifold.h"
+#include "KartContactMaterial.h"
 
 struct FKartSolverSettings
 {
     int32 Iterations=24;
     double SlopCm=.02, BiasFraction=.15, MaxBiasCmPerSecond=20;
     double MaxImpulse=1.e8; // kg*cm/s; exceeding this fails atomically, never silently clips impacts.
+    double BounceThresholdCmPerSecond=100;
     bool IsValid() const;
 };
 struct FKartSolvedContact
@@ -15,6 +17,7 @@ struct FKartSolvedContact
     uint64 PersistentId=0;
     FVector Point=FVector::ZeroVector, Normal=FVector::ZeroVector;
     double NormalImpulse=0, ResidualClosingSpeed=0;
+    FVector TangentImpulse=FVector::ZeroVector;
 };
 struct FKartSolverResult
 {
@@ -34,5 +37,6 @@ class ROADTOF1_API FKartPhysicsSolver
 {
 public:
     static FKartSolverResult Solve(TMap<FKartPhysicsBodyId,FKartRigidBodyState>& Bodies,
-        const TArray<FKartContactManifold>& Manifolds,double Dt,const FKartSolverSettings& Settings={});
+        const TArray<FKartContactManifold>& Manifolds,double Dt,const FKartSolverSettings& Settings={},
+        const TMap<FKartPhysicsBodyId,FKartContactMaterial>* Materials=nullptr);
 };
