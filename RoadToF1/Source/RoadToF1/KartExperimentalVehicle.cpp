@@ -7,7 +7,9 @@ bool FKartVehicleSettings::IsValid() const
         && Range(WheelbaseCm,80,130) && Range(TrackCm,60,110) && Range(RestHeightCm,18,30)
         && Range(WheelRadiusCm,8,18) && Range(SteerLimitRadians,.1,.6) && Range(SteerRate,.2,3)
         && Range(DriveAcceleration,100,500) && Range(BrakeAcceleration,200,1000)
-        && Range(FrontGrip,.5,1.5) && Range(RearGrip,.5,1.5);
+        && Range(FrontGrip,.5,1.5) && Range(RearGrip,.5,1.5)
+        && !CollisionHalfExtent.ContainsNaN() && CollisionHalfExtent.GetMin()>=5 && CollisionHalfExtent.GetMax()<=150
+        && Range(StaticBottomInsetCm,0,CollisionHalfExtent.Z);
 }
 bool FKartExperimentalVehicle::Reset(const FKartVehicleSettings& Config,const FVector& Position)
 {

@@ -1,14 +1,12 @@
-# Physics master progress
+Current 2026-10-19: numerical Stage9 recovery passes; full31/31, both Development builds pass. Overall Stage9 blocked by actual mesh coverage (12 unsupported components) and missing shared multi-kart coordinator. Custom gate remains false; Legacy default. Stage10 not started. Branch visual-overhaul-first-person HEADd953f2a; Stage9 uncommitted. Read FINAL_REPORT.md and ../PhysicsStage9/README.md. No push/merge. Next: validated real-track collision adapter, then single/multi-kart acceptance. Preserve all passing regressions and existing work.
 
-Request: stages 5-10 sequentially; no push/merge. Legacy remains default.
-Initial HEAD: 545ac69cd22517cd5b961152fe014e17be908179.
-Experimental branch: visual-overhaul-first-person.
-Safety checkpoint: d92c539 (completed stages 0-4 plus required visual source/assets).
-Original prototype-v1-preserved worktree untouched.
-Checkpoint excluded caches, binaries, generated automation HTML and local reference repositories. Prior reports and validation summaries included. Three pre-existing EOF whitespace notices were retained to preserve the exact prior work.
+## 2026-10-19 — Stage9 static-mesh coverage extension (in progress)
+- Current branch/HEAD preserved: visual-overhaul-first-person d953f2a; existing recovery changes retained. No original-worktree or asset edits.
+- Actual inspection corrected the prior gross count:11 physical cooked triangle meshes (35,724 triangles) plus the editor construction brush. All physical mesh sources use complex-as-simple collision. Only the nonphysical default editor brush is excluded.
+- Added immutable cooked-collision snapshot, median static triangle BVH, finite triangle/OBB SAT+clipping and query-only mesh motion with conservative advancement, split stabilization and preserved remaining time. Legacy path stays unchanged; Custom production gate remains closed.
+- Editor build PASS160.57s after fixing a missing FWeakObjectPtr include. Existing HUD InputKey warnings only. Actual-map geometry/impact/grid-motion tests and prior Stage9 fixtures are running in MeshMotion1; coverage/movement not yet accepted. Shared fleet integration not started pending those results.
+`nStatic MeshMotion2:7/7 pass. Shared FleetContacts5:2/2 pass (chain peak overlap0.003870413cm; unchanged0.2cm gate). FleetProgression1:2/5/10/20 deterministic fixtures pass. ActualWorldFleet1:actual actors2/5/10/20 movement/reset/camera/fallback pass. World coordinator Editor build PASS218.48s. Live PIE/input/HUD/telemetry/physical-lap validation pending; experimental admission remains closed.
 
-Current stage: 5, implementation/testing in progress. Added isolated velocity-only normal PGS solver and analytical/resting regression. No production code modifications. Custom remains rejected.
-Pending: build, focused tests, corrections, stage regression, standalone build, stage report/checkpoint; then stages 6-10.
-No new validation results claimed yet. Earlier Stage4 evidence records 23/23 suites passed.
+Latest handoff2026-10-19: FleetFull1 40/41; only live physical-lap CP2 stall fails. Prior31 regressions intact. Cooked mesh coverage/shared fleet/control fixtures implemented and pass. Stage9 remains incomplete; Stage10 not started; no Custom human readiness, no commit/push/merge. Read repository-root CODEX_HANDOFF_STAGE9_2026-10-19.md and current FINAL_REPORT.md. No validation process remains running.
 
-Progress update: Stage5 complete/checkpoint e7c78c2; Stage6 complete/checkpoint6478f03. All7 physics suites passed after6, both Development builds passed. Current Stage7 isolated vehicle sources written; compiling/testing, not yet accepted. Legacy gameplay files untouched by5-7. Next: diagnose Stage7 tests, finish its quality gates, then8. Stages9-10 not started.
+Stage9 PASS:Stage9Acceptance1 43/43,Editor18.64s/game115.89s,diff/whitespace clean. Actual chassis static underside correction + Custom physical braking planning resolve stall. Solo/rejoin/live20/control and prior31 regressions pass. Stage10 next. User authorized eventual push/merge after testing; not performed yet.

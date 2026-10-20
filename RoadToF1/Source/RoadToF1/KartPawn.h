@@ -14,15 +14,16 @@ class ROADTOF1_API AKartPawn : public APawn
     GENERATED_BODY()
 public:
     AKartPawn();
-    // Stage 0: Custom is reserved, not executable. No editable backend property can bypass this gate.
+    // Legacy by default. Custom is restricted to an explicitly tagged, single-kart test world.
+    // No editable backend property can bypass world/stationary admission checks.
     UFUNCTION(BlueprintPure, Category="Kart|Physics")
-    EKartPhysicsBackend GetPhysicsBackend() const { return EKartPhysicsBackend::Legacy; }
+    EKartPhysicsBackend GetPhysicsBackend() const { return PhysicsBackend; }
     UFUNCTION(BlueprintCallable, Category="Kart|Physics")
-    bool TrySelectPhysicsBackend(EKartPhysicsBackend Requested) { return Requested == EKartPhysicsBackend::Legacy; }
+    bool TrySelectPhysicsBackend(EKartPhysicsBackend Requested);
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
     virtual void SetupPlayerInputComponent(UInputComponent* Input) override;
-    virtual FVector GetVelocity() const override { return GetActorForwardVector() * Speed; }
+    virtual FVector GetVelocity() const override { return PhysicsBackend==EKartPhysicsBackend::Custom?CustomVelocity:GetActorForwardVector()*Speed; }
     void ResetKart();
     void ToggleCamera();
     bool IsFirstPerson() const { return bFirstPerson; }
@@ -48,6 +49,9 @@ public:
     bool IsBrakeHeld() const { return bBrake; }
     void ReceiveCollision(float ImpactSpeed, const FVector& Normal);
 private:
+    friend class UKartPhysicsWorldSubsystem;
+    EKartPhysicsBackend PhysicsBackend=EKartPhysicsBackend::Legacy;
+    FVector CustomVelocity=FVector::ZeroVector;
     void UpdateAudioAndNumber(float Dt);
     void ApplyCameraMode();
     void UpdateDrivingView(float Dt, bool Kerb);

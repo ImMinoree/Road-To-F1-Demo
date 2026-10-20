@@ -55,7 +55,8 @@ FKartSolverResult FKartPhysicsSolver::Solve(TMap<FKartPhysicsBodyId,FKartRigidBo
         for(const auto& P:M.Points)
         {
             if(P.WorldA.ContainsNaN() || P.WorldB.ContainsNaN() || P.LocalA.ContainsNaN() || P.LocalB.ContainsNaN()
-                || !FMath::IsFinite(P.Depth) || P.Depth<0
+                || !FMath::IsFinite(P.Depth) || P.Depth<0 || !FMath::IsFinite(P.AllowedClosingSpeed)
+                || P.AllowedClosingSpeed<0 || P.AllowedClosingSpeed>100000 || (P.Depth>0 && P.AllowedClosingSpeed>0)
                 || !(P.WorldA-P.WorldB).Equals(M.Normal*P.Depth,1.e-4)
                 || !(A->GetPosition()+A->GetOrientation().RotateVector(P.LocalA)).Equals(P.WorldA,1.e-4)
                 || !(B->GetPosition()+B->GetOrientation().RotateVector(P.LocalB)).Equals(P.WorldB,1.e-4))
@@ -69,10 +70,10 @@ FKartSolverResult FKartPhysicsSolver::Solve(TMap<FKartPhysicsBodyId,FKartRigidBo
             if(!FMath::IsFinite(K) || K<0)return Fail(TEXT("Invalid effective mass"));
             if(A->IsImmovable() && B->IsImmovable())continue;
             if(K<1.e-12)return Fail(TEXT("Near-zero effective mass"));
-            R.Mass=1/K;R.Bias=FMath::Min(S.MaxBiasCmPerSecond,S.BiasFraction*FMath::Max(0.,P.Depth-S.SlopCm)/Dt);
+            R.Mass=1/K;R.Bias=P.AllowedClosingSpeed>0?-P.AllowedClosingSpeed:FMath::Min(S.MaxBiasCmPerSecond,S.BiasFraction*FMath::Max(0.,P.Depth-S.SlopCm)/Dt);
             R.Material=FKartContactMaterial::Combine(MA,MB);
             const double InitialV=FVector::DotProduct(VelocityAt(*B,R.RB)-VelocityAt(*A,R.RA),R.N);
-            if(InitialV < -S.BounceThresholdCmPerSecond)R.Bias=FMath::Max(R.Bias,-R.Material.Restitution*InitialV);
+            if(P.AllowedClosingSpeed==0 && InitialV < -S.BounceThresholdCmPerSecond)R.Bias=FMath::Max(R.Bias,-R.Material.Restitution*InitialV);
             R.T1=FVector::CrossProduct(R.N,FMath::Abs(R.N.Z)<.8?FVector(0,0,1):FVector(0,1,0)).GetSafeNormal();
             R.T2=FVector::CrossProduct(R.N,R.T1);
             auto TangentK=[&](const FVector& U,const FVector& V){return (A->GetInverseMass()+B->GetInverseMass())*FVector::DotProduct(U,V)

@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "KartRaceDirector.h"
 #include "KartTrainingRecorder.h"
+#include "KartPhysicsWorldSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
@@ -236,6 +237,12 @@ void AKartPawn::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
     UpdateAudioAndNumber(DeltaSeconds);
+    if(PhysicsBackend==EKartPhysicsBackend::Custom)
+    {
+        auto* Physics=GetWorld()->GetSubsystem<UKartPhysicsWorldSubsystem>();
+        if(!Physics->IsFleetKart(*this))Physics->AdvanceTestKart(*this,DeltaSeconds);
+        return; // Exclusive owner: never enter Legacy swept movement or physical incident response.
+    }
     // Bounded substeps keep swept movement, braking and steering stable during hitches.
     bool ViewKerb=false;
     const bool SampleKerb=IsLocallyControlled() && bFirstPerson;
@@ -346,6 +353,7 @@ void AKartPawn::ResetKart()
     Boom->bEnableCameraLag = false;
     Boom->TickComponent(0, LEVELTICK_All, nullptr);
     Boom->bEnableCameraLag = true;
+    if(PhysicsBackend==EKartPhysicsBackend::Custom)GetWorld()->GetSubsystem<UKartPhysicsWorldSubsystem>()->ResetTestKart(*this);
 }
 
 void AKartPawn::ReceiveCollision(float ImpactSpeed, const FVector& Normal)
@@ -353,10 +361,10 @@ void AKartPawn::ReceiveCollision(float ImpactSpeed, const FVector& Normal)
     if (bRaceFinished || CollisionCooldown > 0 || ImpactSpeed < 100) return;
     CollisionCooldown = 1;
     ++CollisionCount;
-    Speed *= .25f;
+    if(PhysicsBackend==EKartPhysicsBackend::Legacy)Speed *= .25f;
     StunSeconds = FMath::Clamp(ImpactSpeed / 1500.f, .15f, 1.f);
     const float Side = FVector::DotProduct(Normal, GetActorRightVector());
-    AddActorWorldRotation(FRotator(0, FMath::Clamp(Side * ImpactSpeed / 70.f, -12.f, 12.f), 0));
+    if(PhysicsBackend==EKartPhysicsBackend::Legacy)AddActorWorldRotation(FRotator(0, FMath::Clamp(Side * ImpactSpeed / 70.f, -12.f, 12.f), 0));
     if (ImpactSpeed >= 700) FireSeconds = 6;
 }
 

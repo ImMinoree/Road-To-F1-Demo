@@ -21,6 +21,12 @@ struct FKartVehicleSettings
     double WheelbaseCm=100,TrackCm=80,RestHeightCm=24,WheelRadiusCm=12;
     double SteerLimitRadians=.45,SteerRate=1.8,DriveAcceleration=320,BrakeAcceleration=800;
     double FrontGrip=1,RearGrip=1;
+    FVector CollisionHalfExtent=FVector(50,40,10); // Isolated model default; live pawn supplies its authored collision hull.
+    // Static chassis excludes the tire's low envelope; tire support is separate.
+    // Zero retains the isolated model/fixture geometry exactly.
+    double StaticBottomInsetCm=0;
+    FVector StaticShapeOffset() const {return FVector(0,0,StaticBottomInsetCm*.5);}
+    FVector StaticShapeHalfExtent() const {return CollisionHalfExtent-StaticShapeOffset();}
     bool IsValid() const;
 };
 /** Isolated four support-point kart. No actors, collision queries, race logic or backend selection.

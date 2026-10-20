@@ -7,6 +7,25 @@ struct FVertex {FVector P;uint16 Source;uint8 Planes;};
 using FPolygon=TArray<FVertex,TInlineAllocator<16>>;
 using FPoints=TArray<FKartContactPoint,TInlineAllocator<16>>;
 FVector Axis(const FKartConvexShape& S,int32 I){FVector U=FVector::ZeroVector;U[I]=1;return S.Orientation.RotateVector(U);}
+// Exact OBB separating-axis fallback for a numerically degenerate GJK simplex.
+// No hull/mesh approximation, no fabricated EPA convergence. Edge axes still
+// require an independently valid witness if face clipping cannot construct a patch.
+bool BoxSAT(const FKartConvexShape& A,const FKartConvexShape& B,FVector& Normal,double& Depth)
+{
+    const FVector Delta=B.Position-A.Position;Depth=TNumericLimits<double>::Max();
+    auto TestAxis=[&](FVector N)
+    {
+        const double Length=N.Size();if(Length<1.e-12)return true;N/=Length;
+        double Radius=0;for(int I=0;I<3;++I)Radius+=A.HalfExtents[I]*FMath::Abs(FVector::DotProduct(Axis(A,I),N))
+            +B.HalfExtents[I]*FMath::Abs(FVector::DotProduct(Axis(B,I),N));
+        const double D=Radius-FMath::Abs(FVector::DotProduct(Delta,N));
+        if(D<0)return false;
+        if(D<Depth){Depth=D;Normal=FVector::DotProduct(Delta,N)>=0?N:-N;}return true;
+    };
+    for(int I=0;I<3;++I)if(!TestAxis(Axis(A,I)) || !TestAxis(Axis(B,I)))return false;
+    for(int I=0;I<3;++I)for(int J=0;J<3;++J)if(!TestAxis(FVector::CrossProduct(Axis(A,I),Axis(B,J))))return false;
+    return true;
+}
 int32 BestAxis(const FKartConvexShape& S,const FVector& N,double& Dot)
 {
     int32 Best=0;Dot=-1;for(int32 I=0;I<3;++I){const double D=FMath::Abs(FVector::DotProduct(Axis(S,I),N));if(D>Dot){Dot=D;Best=I;}}return Best;
@@ -135,10 +154,23 @@ FKartContactManifold KartManifolds::Build(FKartPhysicsPair Pair,const FKartConve
     {
         M.bNarrowphaseRun=true;const auto G=KartNarrowphase::Query(A,B,Settings.Narrowphase);M.GJK=G.GJK;M.EPA=G.EPA;
         if(G.GJK==EKartGJKStatus::Separated || G.GJK==EKartGJKStatus::Touching)return M;
-        if(!G.bGeometryValid){M.Status=G.GJK==EKartGJKStatus::InvalidInput?EKartManifoldStatus::InvalidInput:EKartManifoldStatus::GeometryFailure;return M;}
-        M.Normal=G.Normal;
-        if(A.Kind==EKartConvexKind::Box && B.Kind==EKartConvexKind::Box && BoxClip(Candidates,M,A,B))M.Method=EKartManifoldMethod::BoxClip;
-        else {M.Method=EKartManifoldMethod::EPAWitness;Add(Candidates,G.PointOnA,G.PointOnB,M.Normal,0,A,B);}
+        if(!G.bGeometryValid)
+        {
+            if(A.Kind==EKartConvexKind::Box && B.Kind==EKartConvexKind::Box
+                && (G.GJK==EKartGJKStatus::Degenerate || G.GJK==EKartGJKStatus::IterationLimit))
+            {
+                double Depth=0;M.Method=EKartManifoldMethod::BoxSATClip;
+                if(!BoxSAT(A,B,M.Normal,Depth) || Depth==0)return M;
+                if(!BoxClip(Candidates,M,A,B)){M.Status=EKartManifoldStatus::GeometryFailure;return M;}
+            }
+            else {M.Status=G.GJK==EKartGJKStatus::InvalidInput?EKartManifoldStatus::InvalidInput:EKartManifoldStatus::GeometryFailure;return M;}
+        }
+        else
+        {
+            M.Normal=G.Normal;
+            if(A.Kind==EKartConvexKind::Box && B.Kind==EKartConvexKind::Box && BoxClip(Candidates,M,A,B))M.Method=EKartManifoldMethod::BoxClip;
+            else {M.Method=EKartManifoldMethod::EPAWitness;Add(Candidates,G.PointOnA,G.PointOnB,M.Normal,0,A,B);}
+        }
     }
     Reduce(Candidates,M,Settings,Previous);M.Status=M.Points.IsEmpty()?EKartManifoldStatus::GeometryFailure:EKartManifoldStatus::Valid;
     if(M.Method==EKartManifoldMethod::SphereAnalytic || M.Method==EKartManifoldMethod::SphereBoxAnalytic)M.GJK=EKartGJKStatus::InvalidInput; // Not run; Method identifies analytical geometry, never claimed GJK convergence.

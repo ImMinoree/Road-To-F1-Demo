@@ -2,7 +2,7 @@
 #include "KartPhysicsNarrowphase.h"
 
 enum class EKartManifoldStatus : uint8 { NoContact, Valid, InvalidInput, GeometryFailure, Unsupported };
-enum class EKartManifoldMethod : uint8 { None, SphereAnalytic, SphereBoxAnalytic, BoxClip, EPAWitness };
+enum class EKartManifoldMethod : uint8 { None, SphereAnalytic, SphereBoxAnalytic, BoxClip, EPAWitness, BoxSATClip, TriangleClip };
 /** cm, shape origin == body origin, no scale/offset. Positive Depth means penetration;
  * WorldA-WorldB = Normal*Depth. Age counts matched manual updates, not seconds.
  * No impulse fields or solver behavior in Stage4. */
@@ -11,6 +11,7 @@ struct FKartContactPoint
     FVector WorldA=FVector::ZeroVector,WorldB=FVector::ZeroVector;
     FVector LocalA=FVector::ZeroVector,LocalB=FVector::ZeroVector;
     double Depth=0;
+    double AllowedClosingSpeed=0; // Speculative zero-depth row: current gap / remaining dt, cm/s. Default preserves real contacts.
     uint64 Feature=0,PersistentId=0;
     uint32 Age=0;
 };

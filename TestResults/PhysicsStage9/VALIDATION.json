@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-19",
+  "stage9Acceptance": "PASS",
+  "stage10": "NEXT_NOT_YET_RUN",
+  "legacyDefault": true,
+  "customUserGate": false,
+  "automation": "Stage9Acceptance1/index.json",
+  "passed": 43,
+  "failed": 0,
+  "skipped": 0,
+  "warningSuites": 0,
+  "durationSeconds": 189.564834594727,
+  "editorSeconds": 18.64,
+  "gameSeconds": 115.89,
+  "actualRejoins": 48,
+  "actualSoloLapSeconds": 115.817,
+  "liveTwentyKartPlayerLapSeconds": 129.567,
+  "humanTested": false,
+  "push": false,
+  "merge": false
+}
