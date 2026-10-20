@@ -10,3 +10,7 @@ Current 2026-10-19: numerical Stage9 recovery passes; full31/31, both Developmen
 Latest handoff2026-10-19: FleetFull1 40/41; only live physical-lap CP2 stall fails. Prior31 regressions intact. Cooked mesh coverage/shared fleet/control fixtures implemented and pass. Stage9 remains incomplete; Stage10 not started; no Custom human readiness, no commit/push/merge. Read repository-root CODEX_HANDOFF_STAGE9_2026-10-19.md and current FINAL_REPORT.md. No validation process remains running.
 
 Stage9 PASS:Stage9Acceptance1 43/43,Editor18.64s/game115.89s,diff/whitespace clean. Actual chassis static underside correction + Custom physical braking planning resolve stall. Solo/rejoin/live20/control and prior31 regressions pass. Stage10 next. User authorized eventual push/merge after testing; not performed yet.
+
+CURRENT: Stage10 AcceptanceCandidate2 51/51 PASS; all19+player three-lap completion at30/60FPS. Explicit F10 admission enabled, Legacy default. Final admission/standalone validation pending; see FINAL_REPORT.md and PhysicsStage10/README.md. No remote changes yet.
+
+FINAL: FinalAdmission1/1 PASS without automation bypass; Editor/standalone/diff checks PASS. Stage10 complete for experimental Development opt-in. Read PhysicsStage10/README.md; human feel and release packaging remain unverified.

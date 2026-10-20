@@ -27,9 +27,16 @@ struct FKartFleetDiagnostics
     uint64 Steps=0,PairsSolved=0,StaticPairsSolved=0,ContactRows=0,ReusedContacts=0;
     int32 LastPairs=0,LastCandidates=0,DuplicatePairs=0;
     double MaxStepMilliseconds=0,TotalStepMilliseconds=0,MaxCurrentPenetrationCm=0;
+    double PrepareMilliseconds=0,GeometryMilliseconds=0,SolverMilliseconds=0,MotionMilliseconds=0;
     double LastNormalResidual=0,MaxNormalResidual=0;
+    double MaxActualBoxOverlapCm=0;
+    FString DeepestDynamicPair;
     int32 LastIterations=0;
     uint64 AdaptiveSolves=0;
+    uint64 RefinedSteps=0;
+    int32 MaxRefinement=0;
+    uint64 WorldSteps=0;
+    double TotalWorldStepMilliseconds=0,MaxWorldStepMilliseconds=0;
 };
 /** One shared, deterministic velocity constraint batch per fixed step.
  * Public value inputs facilitate replay tests; world subsystem owns scheduling/actors.
@@ -40,6 +47,8 @@ public:
     TArray<FKartFleetBody> Bodies;
     bool bDetailedDiagnostics=false;
     bool bCaptureContactDiagnostics=false;
+    bool bProfileSteps=false;
+    TArray<double> StepMilliseconds;
     TArray<FKartFleetContactDiagnostic> LastContacts;
     FString LastConstraintSummary;
     bool Step(const UWorld& World,const FKartStaticMeshGeometry& Scene,double Dt,FString& Failure);
@@ -48,6 +57,8 @@ public:
     const FKartFleetDiagnostics& GetDiagnostics() const {return Diagnostics;}
     const FKartPhysicsBroadphase& GetBroadphase() const {return Tree;}
 private:
+    bool StepRefined(const UWorld& World,const FKartStaticMeshGeometry& Scene,double Dt,FString& Failure,int32 Level);
+    bool StepOnce(const UWorld& World,const FKartStaticMeshGeometry& Scene,double Dt,FString& Failure);
     FKartPhysicsBroadphase Tree;
     FKartPhysicsManifoldCache Cache;
     FKartFleetDiagnostics Diagnostics;

@@ -61,3 +61,5 @@ Recovery edits: KartCustomSceneBridge.cpp/.h, KartPhysicsManifoldBuilder.cpp, Ka
 6. Stop PIE and restart the race map to return to the default Legacy world. The isolated automation verifies stationary Custom-to-Legacy fallback/reset; manual F5/F9 Custom driving is pending.
 
 No rendered/manual driving occurred. No new checkpoint: full Stage9 gates remain unmet. Branch visual-overhaul-first-person, HEADd953f2a. No push/merge or original-project modification. See RECOVERY.md for earlier numerical evidence and ../PhysicsMaster/FINAL_REPORT.md for overall readiness.
+
+Current continuation: Stage9 validated checkpoint15e27b4; Stage10 51/51 acceptance now passes. See ../PhysicsStage10/README.md for explicit F10 launch, metrics and remaining limits.

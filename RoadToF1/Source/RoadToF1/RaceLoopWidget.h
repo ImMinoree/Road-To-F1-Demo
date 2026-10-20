@@ -49,6 +49,7 @@ private:
     UPROPERTY(Transient) TObjectPtr<UTextBlock> RaceTimer;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> LastLap;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> Speed;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> SpeedUnit;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> Position;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> TrainingStatus;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> TowerLap;

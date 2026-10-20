@@ -15,6 +15,8 @@
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Engine/Engine.h"
+#include "EngineUtils.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/PointLightComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -215,6 +217,24 @@ void AKartPawn::SetupPlayerInputComponent(UInputComponent* Input)
     Input->BindKey(EKeys::SpaceBar, IE_Released, this, &AKartPawn::BrakeReleased);
     Input->BindKey(EKeys::V, IE_Pressed, this, &AKartPawn::ToggleCamera);
     Input->BindKey(EKeys::F9, IE_Pressed, this, &AKartPawn::ToggleTrainingRecording);
+#if !UE_BUILD_SHIPPING
+    FInputKeyBinding PhysicsKey(FInputChord(EKeys::F10),IE_Pressed);
+    PhysicsKey.KeyDelegate.GetDelegateForManualSet().BindLambda([this]()
+    {
+        auto* Physics=GetWorld()->GetSubsystem<UKartPhysicsWorldSubsystem>();
+        bool Ok=false;
+        if(Physics->IsFleetKart(*this))Ok=Physics->ReleaseFleet();
+        else
+        {
+            TArray<AKartPawn*> Karts;for(TActorIterator<AKartPawn> It(GetWorld());It;++It)Karts.Add(*It);
+            Ok=Physics->SelectFleet(Karts,true);
+        }
+        if(GEngine)GEngine->AddOnScreenDebugMessage(71010,6,Ok?FColor::Cyan:FColor::Yellow,
+            Ok?(Physics->IsFleetKart(*this)?TEXT("CUSTOM physics active (experimental)"):TEXT("LEGACY physics active")):
+            FString(TEXT("Physics switch rejected; restart with F5, then F10. "))+Physics->GetFleetFailure());
+    });
+    Input->KeyBindings.Add(PhysicsKey);
+#endif
 }
 
 void AKartPawn::ToggleTrainingRecording()

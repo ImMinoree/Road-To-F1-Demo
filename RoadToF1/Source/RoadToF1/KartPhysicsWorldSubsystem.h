@@ -12,15 +12,15 @@
 #include "KartPhysicsWorldSubsystem.generated.h"
 class AKartPawn;
 
-/** Option B ownership boundary (future custom backend):
+/** Option B exclusive ownership boundary:
  * Custom owns position/orientation/velocity/forces/impulses and final transform.
  * Unreal provides geometry queries only. Custom karts must not simulate in Unreal.
  * Never combine custom response with legacy swept movement/impact rotation.
- * This shared coordinator will solve each canonical kart pair once per step.
+ * The shared coordinator solves each canonical kart pair once per accepted integration slice; rejected trials never publish response.
  * Incident consumers may display/count events, not add physical impulses/rotations.
- * Stage9 adds one explicitly admitted test kart, advanced by its Pawn tick through this coordinator.
- * The broadphase remains dormant until shared multi-kart admission is implemented and validated.
- * No automatic world tick or default Custom registration. Production race admission is rejected.
+ * Explicit fleet selection activates a world-level120Hz clock; pawns skip Legacy.
+ * Legacy remains default. Restricted single-body fixtures retain a separate clock.
+ * Validated experimental admission requires explicit development opt-in.
  */
 UCLASS()
 class ROADTOF1_API UKartPhysicsWorldSubsystem : public UTickableWorldSubsystem
@@ -47,9 +47,12 @@ public:
     const FString& GetFleetFailure() const {return FleetFailure;}
     const FKartCustomFleet& GetCustomFleet() const {return Fleet;}
     void SetFleetContactDiagnostics(bool Enabled){Fleet.bCaptureContactDiagnostics=Enabled;}
+    void SetFleetProfiling(bool Enabled){Fleet.bProfileSteps=Enabled;}
+    bool GetStaticChassisQuery(const AKartPawn& Kart,FKartConvexShape& Shape) const;
+    bool CanTranslateStaticChassis(const AKartPawn& Kart,const FVector& Delta) const;
     double GetDroppedCustomTime() const {return FleetClock.DroppedSeconds;}
-    // Closed until all Stage9 admission gates pass; never changes the Legacy default.
-    static constexpr bool IsExperimentalRaceReady(){return false;}
+    // Stage9/10 validated: explicit experimental admission only; Legacy remains default.
+    static constexpr bool IsExperimentalRaceReady(){return true;}
 private:
     struct FLiveKart
     {

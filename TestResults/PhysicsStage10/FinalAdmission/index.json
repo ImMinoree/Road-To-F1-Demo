@@ -1,0 +1,44 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-ERDHE74",
+			"instance": "3949F7C347543C9405FC7DB75A45A66C",
+			"instanceName": "DESKTOP-ERDHE74-24036",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 10 (22H2) [10.0.19045.6466] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 3080",
+			"cPUModel": "Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz",
+			"rAMInGB": 32,
+			"renderMode": "SM6",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.20-03.24.59",
+	"succeeded": 1,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 2.4191029071807861,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "Stage10KeyboardSelection",
+			"fullTestPath": "RoadToF1.Physics.Stage10KeyboardSelection",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"3949F7C347543C9405FC7DB75A45A66C"
+			],
+			"duration": 2.4191029071807861,
+			"dateTime": "2026.10.20-03.24.57",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}

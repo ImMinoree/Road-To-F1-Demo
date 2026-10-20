@@ -140,9 +140,10 @@ bool FKartMeshMotionTest::RunTest(const FString&)
     }
     if(!TestTrue(TEXT("Real wall with collision-free approach found"),Barrier!=INDEX_NONE))return false;
     const auto& T=Scene.GetTriangles()[Barrier];const auto PlanePoint=T.V[0];
-    for(double Speed:{300.,1500.})
+    for(bool LiveHull:{false,true})for(double Speed:{300.,1500.})
     {
-        FKartExperimentalVehicle V;V.Reset({},Start.Position);V.Body.SetPose(Start.Position,Start.Orientation);V.Body.SetVelocities(-Outward*Speed,FVector::ZeroVector);
+        FKartVehicleSettings Config;if(LiveHull){Config.CollisionHalfExtent=FVector(98,63,20);Config.StaticBottomInsetCm=7.5;}
+        FKartExperimentalVehicle V;V.Reset(Config,Start.Position);V.Body.SetPose(Start.Position,Start.Orientation);V.Body.SetVelocities(-Outward*Speed,FVector::ZeroVector);
         bool Valid=true;double Closest=1.e9,Impulse=0,MaxDepth=0;
         for(int Step=0;Step<120;++Step)
         {
@@ -150,9 +151,9 @@ bool FKartMeshMotionTest::RunTest(const FString&)
             if(!KartMeshMotion::Advance(Scene,V,P,Q,1./120,J,&Failure,&Stats,{})){Valid=false;AddInfo(FString::Printf(TEXT("Actual mesh impact stopped step%d %s"),Step,*Failure));break;}
             Impulse+=J.Size();Closest=FMath::Min(Closest,FVector::DotProduct(V.Body.GetPosition()-PlanePoint,Outward));MaxDepth=FMath::Max(MaxDepth,Stats.MaxPenetrationCm);
         }
-        TestTrue(TEXT("Actual mesh motion valid"),Valid);TestTrue(TEXT("Real wall stops approach without tunneling"),Closest>=49.8 && Impulse>0);
+        TestTrue(TEXT("Actual mesh motion valid"),Valid);TestTrue(TEXT("Real wall stops approach without tunneling"),Closest>=Config.CollisionHalfExtent.X-.2 && Impulse>0);
         TestTrue(TEXT("Mesh penetration below 2mm"),MaxDepth<.2);
-        AddInfo(FString::Printf(TEXT("ACTUAL_WALL source%s triangle%d speed%.0f closest%.9g depth%.9g impulse%.9g"),*Scene.GetSources()[T.Source].Path,Barrier,Speed,Closest,MaxDepth,Impulse));
+        AddInfo(FString::Printf(TEXT("ACTUAL_WALL liveHull%d source%s triangle%d speed%.0f closest%.9g depth%.9g impulse%.9g"),LiveHull,*Scene.GetSources()[T.Source].Path,Barrier,Speed,Closest,MaxDepth,Impulse));
     }
     APlayerStart* Grid=nullptr;for(TActorIterator<APlayerStart> It(W);It;++It){Grid=*It;break;}
     if(!TestNotNull(TEXT("Actual grid player start"),Grid))return false;

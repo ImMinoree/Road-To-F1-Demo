@@ -86,6 +86,33 @@ bool BoxClip(FPoints& Out,FKartContactManifold& M,const FKartConvexShape& A,cons
     }
     return true;
 }
+bool BoxEdge(FPoints& Out,FKartContactManifold& M,const FKartConvexShape& A,const FKartConvexShape& B)
+{
+    // The minimum SAT cross axis identifies two finite supporting edges.
+    // Solve their closest line parameters, then require both parameters to
+    // lie ON the edges and the witness difference to match the SAT normal.
+    // This is exact OBB geometry, never a hull approximation or EPA success.
+    for(int I=0;I<3;++I)for(int J=0;J<3;++J)
+    {
+        const FVector U=Axis(A,I),V=Axis(B,J),Cross=FVector::CrossProduct(U,V);
+        if(Cross.SizeSquared()<1.e-12 || FMath::Abs(FVector::DotProduct(Cross.GetSafeNormal(),M.Normal))<1.-1.e-8)continue;
+        FVector CA=A.Position,CB=B.Position;
+        for(int K=0;K<3;++K)
+        {
+            if(K!=I)CA+=Axis(A,K)*(FVector::DotProduct(Axis(A,K),M.Normal)>=0?A.HalfExtents[K]:-A.HalfExtents[K]);
+            if(K!=J)CB+=Axis(B,K)*(FVector::DotProduct(Axis(B,K),M.Normal)>=0?-B.HalfExtents[K]:B.HalfExtents[K]);
+        }
+        const FVector R=CA-CB;const double UV=FVector::DotProduct(U,V),Den=1-UV*UV;
+        if(Den<1.e-12)continue;
+        const double S=(UV*FVector::DotProduct(V,R)-FVector::DotProduct(U,R))/Den;
+        const double T=UV*S+FVector::DotProduct(V,R);
+        if(FMath::Abs(S)>A.HalfExtents[I]+GeometryCm || FMath::Abs(T)>B.HalfExtents[J]+GeometryCm)continue;
+        const FVector WA=CA+U*S,WB=CB+V*T,D=WA-WB;const double Depth=FVector::DotProduct(D,M.Normal);
+        if(Depth<0 || (D-M.Normal*Depth).Size()>1.e-5)continue;
+        Add(Out,WA,WB,M.Normal,0x300000000ull+I*3+J,A,B);return !Out.IsEmpty();
+    }
+    return false;
+}
 void Reduce(FPoints& Candidates,FKartContactManifold& M,const FKartManifoldSettings& S,const FKartContactManifold* Old)
 {
     Candidates.Sort(Less);FPoints Unique;
@@ -161,7 +188,7 @@ FKartContactManifold KartManifolds::Build(FKartPhysicsPair Pair,const FKartConve
             {
                 double Depth=0;M.Method=EKartManifoldMethod::BoxSATClip;
                 if(!BoxSAT(A,B,M.Normal,Depth) || Depth==0)return M;
-                if(!BoxClip(Candidates,M,A,B)){M.Status=EKartManifoldStatus::GeometryFailure;return M;}
+                if(!BoxClip(Candidates,M,A,B) && !BoxEdge(Candidates,M,A,B)){M.Status=EKartManifoldStatus::GeometryFailure;return M;}
             }
             else {M.Status=G.GJK==EKartGJKStatus::InvalidInput?EKartManifoldStatus::InvalidInput:EKartManifoldStatus::GeometryFailure;return M;}
         }

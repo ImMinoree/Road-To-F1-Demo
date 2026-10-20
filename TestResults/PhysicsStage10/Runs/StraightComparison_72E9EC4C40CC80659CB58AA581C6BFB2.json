@@ -1,0 +1,17 @@
+{
+	"source": "Same actual-grid straight, ordinary full throttle6s then full brake; supplied1/60s frame steps, no race/gate claims",
+	"legacy":
+	{
+		"time_to90pct_cap_seconds": 4.75,
+		"peak_kmh": 57,
+		"braking_seconds": 1.0666666666666667,
+		"braking_distance_cm": 829.06258595564304
+	},
+	"custom":
+	{
+		"time_to90pct_cap_seconds": 4.833333333333333,
+		"peak_kmh": 56.499866485595703,
+		"braking_seconds": 3.2999999999999998,
+		"braking_distance_cm": 1881.9845175147543
+	}
+}

@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "HAL/IConsoleManager.h"
+#include "KartMeshSceneMotion.h"
 
 bool UKartPhysicsWorldSubsystem::IsTickable() const
 {return !IsTemplate() && !FleetActors.IsEmpty() && !bFleetFault;}
@@ -15,7 +16,46 @@ void UKartPhysicsWorldSubsystem::Tick(float Dt)
 {Super::Tick(Dt);if(!FleetActors.IsEmpty())AdvanceCustomWorld(Dt);}
 bool UKartPhysicsWorldSubsystem::IsFleetKart(const AKartPawn& Kart) const
 {for(const auto& E:FleetActors)if(E.Pawn.Get()==&Kart)return true;return false;}
+bool UKartPhysicsWorldSubsystem::GetStaticChassisQuery(const AKartPawn& Kart,FKartConvexShape& Shape) const
+{
+    for(const auto& R:FleetActors)if(R.Pawn.Get()==&Kart)
+        if(const auto* B=Fleet.Bodies.FindByPredicate([&](const FKartFleetBody& E){return E.Id==R.Id;}))
+        {
+            Shape.Orientation=Kart.GetActorQuat();Shape.Position=Kart.GetActorLocation()+Shape.Orientation.RotateVector(B->Vehicle.Settings.StaticShapeOffset());
+            Shape.HalfExtents=B->Vehicle.Settings.StaticShapeHalfExtent();return true;
+        }
+    return false;
+}
 
+bool UKartPhysicsWorldSubsystem::CanTranslateStaticChassis(const AKartPawn& Kart,const FVector& Delta) const
+{
+    FKartConvexShape Start;if(!FleetScene.IsCurrent() || Delta.ContainsNaN() || !GetStaticChassisQuery(Kart,Start))return false;
+    auto End=Start;End.Position+=Delta;FKartPhysicsAABB A,B;Start.Bounds(A);End.Bounds(B);
+    TArray<int32> Candidates;FleetScene.Query(FKartPhysicsAABB::Combine(A,B),Candidates);
+    for(int Index:Candidates)
+    {
+        const auto& T=FleetScene.GetTriangles()[Index];
+        const FVector Plane=FVector::CrossProduct(T.V[1]-T.V[0],T.V[2]-T.V[0]).GetSafeNormal();
+        double Radius=0;for(int I=0;I<3;++I){FVector Axis=FVector::ZeroVector;Axis[I]=1;Radius+=Start.HalfExtents[I]*FMath::Abs(FVector::DotProduct(Start.Orientation.RotateVector(Axis),Plane));}
+        const double Distance=FVector::DotProduct(Start.Position-T.V[0],Plane);
+        // Exact plane separation remains valid over this entire translation.
+        // Adjacent finite triangles on the same touching wall must not turn
+        // tangent travel across their seam into a false new obstruction.
+        if(FMath::Abs(Distance)>=Radius-1.e-7 && Distance*FVector::DotProduct(Delta,Plane)>=-1.e-7)continue;
+        FVector N;const double Gap=FleetScene.Separation(Start,T,N);
+        if(Gap<=.02)
+        {
+            // A currently touching floor/kerb cannot forbid a tangent or
+            // separating retreat. Moving into that same separating plane is
+            // still rejected; every NEW obstacle is independently swept below.
+            if(FVector::DotProduct(Delta,N)>1.e-7)return false;
+            continue;
+        }
+        double Time;bool Hit;FString Failure;
+        if(!KartMeshMotion::CastTriangle(Start,End,T,Time,Hit,&Failure) || Hit)return false;
+    }
+    return true;
+}
 bool UKartPhysicsWorldSubsystem::SelectFleet(const TArray<AKartPawn*>& Karts,bool bExplicitDevelopmentOptIn)
 {
 #if UE_BUILD_SHIPPING

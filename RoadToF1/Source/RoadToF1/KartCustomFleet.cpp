@@ -17,13 +17,45 @@ double BoxGap(const FKartConvexShape& A,const FKartConvexShape& B,FVector& Norma
 }
 }
 
-void FKartCustomFleet::ResetCaches(){Tree=FKartPhysicsBroadphase();Cache.Reset();Diagnostics={};}
+void FKartCustomFleet::ResetCaches(){Tree=FKartPhysicsBroadphase();Cache.Reset();Diagnostics={};LastContacts.Reset();StepMilliseconds.Reset();}
 bool FKartCustomFleet::Remove(FKartPhysicsBodyId Id)
 {
     const int Removed=Bodies.RemoveAll([&](const FKartFleetBody& B){return B.Id==Id;});
     FKartPhysicsProxy P;if(Tree.GetProxy(Id,P))Tree.RemoveProxy(Id);Cache.Reset();return Removed==1;
 }
 bool FKartCustomFleet::Step(const UWorld& World,const FKartStaticMeshGeometry& Scene,double Dt,FString& Failure)
+{
+    const double Begin=FPlatformTime::Seconds();const bool Ok=StepRefined(World,Scene,Dt,Failure,0);
+    const double Ms=(FPlatformTime::Seconds()-Begin)*1000;
+    ++Diagnostics.WorldSteps;Diagnostics.TotalWorldStepMilliseconds+=Ms;Diagnostics.MaxWorldStepMilliseconds=FMath::Max(Diagnostics.MaxWorldStepMilliseconds,Ms);return Ok;
+}
+bool FKartCustomFleet::StepRefined(const UWorld& World,const FKartStaticMeshGeometry& Scene,double Dt,FString& Failure,int32 Level)
+{
+    // A speculative velocity projection is only locally linear in rotation.
+    // Validate poses before publication. Retry the ENTIRE shared batch, never
+    // one kart: rejected trials cannot deliver a second physical impulse.
+    const auto SavedBodies=Bodies;const auto SavedTree=Tree;const auto SavedCache=Cache;const auto SavedDiagnostics=Diagnostics;
+    const int SampleCount=StepMilliseconds.Num();
+    if(StepOnce(World,Scene,Dt,Failure))return true;
+    const bool Retry=Failure==TEXT("Refine dynamic motion");
+    Bodies=SavedBodies;Tree=SavedTree;Cache=SavedCache;Diagnostics=SavedDiagnostics;StepMilliseconds.SetNum(SampleCount);LastContacts.Reset();
+    if(!Retry || Level>=8)return false;
+    ++Diagnostics.RefinedSteps;Diagnostics.MaxRefinement=FMath::Max(Diagnostics.MaxRefinement,Level+1);
+    if(!StepRefined(World,Scene,Dt*.5,Failure,Level+1))return false;
+    const auto First=Bodies;const auto FirstContacts=LastContacts;
+    if(!StepRefined(World,Scene,Dt*.5,Failure,Level+1))
+    {
+        Bodies=SavedBodies;Tree=SavedTree;Cache=SavedCache;Diagnostics=SavedDiagnostics;StepMilliseconds.SetNum(SampleCount);LastContacts.Reset();return false;
+    }
+    LastContacts.Append(FirstContacts);
+    for(auto& E:Bodies)for(const auto& A:First)if(E.Id==A.Id)
+    {
+        E.Impulse+=A.Impulse;E.SharedImpulse+=A.SharedImpulse;E.SceneImpulse+=A.SceneImpulse;
+        for(const auto& B:SavedBodies)if(E.Id==B.Id)E.Vehicle.Acceleration=(E.Vehicle.Body.GetLinearVelocity()-B.Vehicle.Body.GetLinearVelocity())/Dt;
+    }
+    Failure.Empty();return true;
+}
+bool FKartCustomFleet::StepOnce(const UWorld& World,const FKartStaticMeshGeometry& Scene,double Dt,FString& Failure)
 {
     Failure.Empty();LastContacts.Reset();const double Begin=FPlatformTime::Seconds();
     auto Fail=[&](const TCHAR* Why){Failure=Why;return false;};
@@ -39,7 +71,10 @@ bool FKartCustomFleet::Step(const UWorld& World,const FKartStaticMeshGeometry& S
     {
         if(!E.Id.IsValid() || E.Id.Value>MAX_uint32 || Current.Contains(E.Id))return Fail(TEXT("Invalid/duplicate fleet ID"));
         Before.Add(E.Id,E.Vehicle.Body.GetLinearVelocity());E.Impulse=E.SharedImpulse=E.SceneImpulse=FVector::ZeroVector;
-        if(!FKartCustomSceneBridge::Prepare(World,E.Ignore,E.Vehicle,E.Input,Dt))return Fail(TEXT("Fleet force preparation failed"));
+        if(!FKartCustomSceneBridge::Prepare(World,E.Ignore,E.Vehicle,E.Input,Dt))
+        {
+            Failure=FString::Printf(TEXT("Fleet force preparation failed id%llu position%s velocity%s omega%s input%.9g/%.9g/%.9g dt%.17g"),E.Id.Value,*E.Vehicle.Body.GetPosition().ToString(),*E.Vehicle.Body.GetLinearVelocity().ToString(),*E.Vehicle.Body.GetAngularVelocity().ToString(),E.Input.Throttle,E.Input.Steer,E.Input.Brake,Dt);return false;
+        }
         const auto& B=E.Vehicle.Body;Current.Add(E.Id,B);
         InteractionEnvelope=FMath::Max(InteractionEnvelope,Dt*(B.GetLinearVelocity().Size()+E.Vehicle.Settings.CollisionHalfExtent.Size()*B.GetAngularVelocity().Size()));
         FKartConvexShape Shape;Shape.Position=B.GetPosition();Shape.Orientation=B.GetOrientation();Shape.HalfExtents=E.Vehicle.Settings.CollisionHalfExtent;Shapes.Add(E.Id,Shape);
@@ -51,6 +86,7 @@ bool FKartCustomFleet::Step(const UWorld& World,const FKartStaticMeshGeometry& S
         else {Proxy.Id=E.Id;Proxy.Bounds=Swept;if(!Tree.RegisterProxy(Proxy))return Fail(TEXT("Fleet proxy registration failed"));}
         Materials.Add(E.Id,FKartContactMaterial::Surface(EKartContactSurface::Bodywork));
     }
+    const double PreparedAt=bProfileSteps?FPlatformTime::Seconds():Begin;
     // Impulses can accelerate a previously stationary middle kart. Include nearby
     // pairs within this step's possible motion even if free prediction never meets.
     for(const auto& E:Next)
@@ -61,11 +97,36 @@ bool FKartCustomFleet::Step(const UWorld& World,const FKartStaticMeshGeometry& S
     }
     TArray<FKartPhysicsPair> Pairs;Tree.GeneratePairs(Pairs);
     for(const auto& E:Next){FKartPhysicsAABB Bounds;Shapes[E.Id].Bounds(Bounds);if(!Tree.UpdateProxy(E.Id,Bounds))return Fail(TEXT("Current proxy update failed"));}
-    if(!Cache.Update(Tree,Pairs,Shapes) || Cache.GetDiagnostics().Failures>0)return Fail(TEXT("Fleet current contact geometry failed"));
+    if(!Cache.Update(Tree,Pairs,Shapes) || Cache.GetDiagnostics().Failures>0)
+    {
+        Failure=TEXT("Fleet current contact geometry failed");
+        for(const auto& M:Cache.GetResults())if(M.Status!=EKartManifoldStatus::Valid && M.Status!=EKartManifoldStatus::NoContact)
+        {
+            auto Pose=[](const FKartConvexShape& S){return FString::Printf(TEXT("P %.17g %.17g %.17g Q %.17g %.17g %.17g %.17g"),S.Position.X,S.Position.Y,S.Position.Z,S.Orientation.X,S.Orientation.Y,S.Orientation.Z,S.Orientation.W);};
+            Failure+=FString::Printf(TEXT(" pair%llu:%llu status%d gjk%d epa%d method%d A{%s} B{%s}"),M.Pair.First().Value,M.Pair.Second().Value,int(M.Status),int(M.GJK),int(M.EPA),int(M.Method),*Pose(Shapes[M.Pair.First()]),*Pose(Shapes[M.Pair.Second()]));break;
+        }
+        return false;
+    }
     TArray<FKartContactManifold> Constraints;TSet<FKartPhysicsPair> Seen;double Depth=0;
     for(auto M:Cache.GetResults())
     {
         if(Seen.Contains(M.Pair)){++Diagnostics.DuplicatePairs;return Fail(TEXT("Duplicate kart pair"));}Seen.Add(M.Pair);
+        if(M.Status==EKartManifoldStatus::Valid)
+        {
+            FVector Axis;const double Actual=FMath::Max(0.,-BoxGap(Shapes[M.Pair.First()],Shapes[M.Pair.Second()],Axis));
+            const bool Peak=Actual>Diagnostics.MaxActualBoxOverlapCm;Diagnostics.MaxActualBoxOverlapCm=FMath::Max(Diagnostics.MaxActualBoxOverlapCm,Actual);
+            if(bProfileSteps && Peak)
+            {
+                auto State=[](const FKartRigidBodyState& B)
+                {
+                    const auto P=B.GetPosition(),V=B.GetLinearVelocity(),W=B.GetAngularVelocity();const auto Q=B.GetOrientation();
+                    return FString::Printf(TEXT("P %.17g %.17g %.17g Q %.17g %.17g %.17g %.17g V %.17g %.17g %.17g W %.17g %.17g %.17g"),P.X,P.Y,P.Z,Q.X,Q.Y,Q.Z,Q.W,V.X,V.Y,V.Z,W.X,W.Y,W.Z);
+                };
+                double PointDepth=0;for(const auto& P:M.Points)PointDepth=FMath::Max(PointDepth,P.Depth);
+                Diagnostics.DeepestDynamicPair=FString::Printf(TEXT("step%llu pair%llu:%llu SAT%.17g points%.17g method%d normal%s A{%s} B{%s}"),Diagnostics.Steps,M.Pair.First().Value,M.Pair.Second().Value,Actual,PointDepth,int(M.Method),*M.Normal.ToString(),*State(Current[M.Pair.First()]),*State(Current[M.Pair.Second()]));
+                if(Actual>2)UE_LOG(LogTemp,Display,TEXT("CUSTOM_OVERLAP %s"),*Diagnostics.DeepestDynamicPair);
+            }
+        }
         if(M.Status==EKartManifoldStatus::NoContact)
         {
             M=KartManifolds::Build(M.Pair,Predicted[M.Pair.First()],Predicted[M.Pair.Second()]);
@@ -142,6 +203,7 @@ bool FKartCustomFleet::Step(const UWorld& World,const FKartStaticMeshGeometry& S
             Constraints.Add(M);++StaticPairs;
         }
     }
+    const double GeometryAt=bProfileSteps?FPlatformTime::Seconds():PreparedAt;
     FKartSolverSettings Physical;Physical.BiasFraction=0;
     const auto Unsolved=Current;
     auto Solved=FKartPhysicsSolver::Solve(Current,Constraints,Dt,Physical,&Materials);
@@ -189,6 +251,7 @@ bool FKartCustomFleet::Step(const UWorld& World,const FKartStaticMeshGeometry& S
         const auto Push=FKartPhysicsSolver::Solve(Correction,Constraints,Dt);
         if(!Push.bSuccess){Failure=Push.Failure;return false;}
     }
+    const double SolvedAt=bProfileSteps?FPlatformTime::Seconds():GeometryAt;
     for(auto& E:Next)
     {
         E.Vehicle.Body=Current[E.Id];
@@ -203,8 +266,33 @@ bool FKartCustomFleet::Step(const UWorld& World,const FKartStaticMeshGeometry& S
         E.Impulse+=StaticImpulse;E.Vehicle.Acceleration=(E.Vehicle.Body.GetLinearVelocity()-Before[E.Id])/Dt;
         if(E.Vehicle.Body.GetLinearVelocity().Size()>6000 || E.Vehicle.Body.GetAngularVelocity().Size()>30)return Fail(TEXT("Fleet numerical velocity guard"));
     }
+    // Independent OBB SAT on final poses catches angular/chain motion that
+    // invalidated the pre-motion linearized constraints. Query the tree again
+    // so newly overlapping pairs cannot be missed by the original candidate set.
+    TMap<FKartPhysicsBodyId,FKartConvexShape> FinalShapes;
+    for(const auto& E:Next)
+    {
+        auto S=Shapes[E.Id];S.Position=E.Vehicle.Body.GetPosition();S.Orientation=E.Vehicle.Body.GetOrientation();FinalShapes.Add(E.Id,S);
+        FKartPhysicsAABB Bounds;S.Bounds(Bounds);if(!Tree.UpdateProxy(E.Id,Bounds))return Fail(TEXT("Final proxy update failed"));
+    }
+    TArray<FKartPhysicsPair> FinalPairs;Tree.GeneratePairs(FinalPairs);
+    for(const auto& Pair:FinalPairs)
+    {
+        FVector N;const double BeforeDepth=FMath::Max(0.,-BoxGap(Shapes[Pair.First()],Shapes[Pair.Second()],N));
+        const double AfterDepth=FMath::Max(0.,-BoxGap(FinalShapes[Pair.First()],FinalShapes[Pair.Second()],N));
+        // One millimetre integration tolerance, below the unchanged two-
+        // millimetre regression bound; not a reduction of occupancy margins.
+        if(AfterDepth>FMath::Max(.1,BeforeDepth+1.e-6))return Fail(TEXT("Refine dynamic motion"));
+        Diagnostics.MaxActualBoxOverlapCm=FMath::Max(Diagnostics.MaxActualBoxOverlapCm,AfterDepth);
+    }
     Bodies=MoveTemp(Next);++Diagnostics.Steps;Diagnostics.LastCandidates=Pairs.Num();Diagnostics.LastPairs=DynamicPairs;Diagnostics.PairsSolved+=DynamicPairs;Diagnostics.StaticPairsSolved+=StaticPairs;
     Diagnostics.ContactRows+=Solved.Contacts.Num();Diagnostics.ReusedContacts+=Cache.GetDiagnostics().Reused;Diagnostics.MaxCurrentPenetrationCm=FMath::Max(Diagnostics.MaxCurrentPenetrationCm,Depth);
-    const double Milliseconds=(FPlatformTime::Seconds()-Begin)*1000;Diagnostics.TotalStepMilliseconds+=Milliseconds;Diagnostics.MaxStepMilliseconds=FMath::Max(Diagnostics.MaxStepMilliseconds,Milliseconds);
+    const double End=FPlatformTime::Seconds(),Milliseconds=(End-Begin)*1000;Diagnostics.TotalStepMilliseconds+=Milliseconds;Diagnostics.MaxStepMilliseconds=FMath::Max(Diagnostics.MaxStepMilliseconds,Milliseconds);
+    if(bProfileSteps)
+    {
+        Diagnostics.PrepareMilliseconds+=(PreparedAt-Begin)*1000;Diagnostics.GeometryMilliseconds+=(GeometryAt-PreparedAt)*1000;
+        Diagnostics.SolverMilliseconds+=(SolvedAt-GeometryAt)*1000;Diagnostics.MotionMilliseconds+=(End-SolvedAt)*1000;
+        if(StepMilliseconds.Num()<250000)StepMilliseconds.Add(Milliseconds);
+    }
     return true;
 }

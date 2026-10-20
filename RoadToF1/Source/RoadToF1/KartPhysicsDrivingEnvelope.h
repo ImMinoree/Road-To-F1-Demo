@@ -7,6 +7,13 @@
  * remain ordinary throttle/brake/steer; there are no hidden body forces. */
 namespace KartPhysicsDriving
 {
+inline double SteeringTowardTarget(const FVector& LocalTarget,double Nominal)
+{
+    // Pure pursuit has zero curvature for a target exactly behind the chassis.
+    // Reacquire the front hemisphere at the caller's low recovery speed using
+    // the EXISTING rack limit. No additional yaw/force or global gain change.
+    return LocalTarget.X<0 && LocalTarget.SizeSquared2D()>10000?(LocalTarget.Y>=0?1.:-1.):Nominal;
+}
 inline double SpeedEnvelope(const TArray<FVector>& Route,int Nearest,double Lane,double Maximum,double Skill=1)
 {
     if(Route.Num()<4)return Maximum;
