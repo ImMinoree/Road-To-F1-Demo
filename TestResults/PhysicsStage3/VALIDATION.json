@@ -1,0 +1,22 @@
+{
+  "stage": 3,
+  "date": "2026-10-18",
+  "branch": "visual-overhaul-first-person",
+  "head": "545ac69cd22517cd5b961152fe014e17be908179",
+  "editor": "PASS",
+  "standalone": "PASS",
+  "passed": 22,
+  "failed": 0,
+  "notRun": 0,
+  "seconds": 159.63296508789062,
+  "stressCases": 300,
+  "stressFailures": 0,
+  "maxCurvedDepthErrorCm": 4.99825764E-05,
+  "existingSourceChanges": 0,
+  "manualVerified": false,
+  "customEnabled": false,
+  "knownLimitation": "Coincident spheres EPA iteration limit, no valid geometry",
+  "commit": false,
+  "push": false,
+  "merge": false
+}

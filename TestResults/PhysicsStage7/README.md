@@ -1,0 +1,14 @@
+# Stage7 — isolated experimental kart (IN PROGRESS)
+
+Single160kg chassis, box mass/inertia; four stiff spring-damper support points,2cm static sag. Rear wheel engine torque, wheel angular inertia, four-wheel braking, rate-limited speed-sensitive steering. Longitudinal slip speed and lateral contact velocity drive brush-like forces bounded by combined grip. Semi-implicit wheel slip update limits stiffness instability. Asphalt/kerb/grass/low-grip inputs; prototype coefficients, not measured tires. Not Pacejka. Physical contact moments and spring redistribution approximate load transfer; no extra duplicated analytical transfer term.
+
+Wheel samples are supplied by caller. Height-at-wheel plus normal input is an isolated support model, NOT an authoritative track collision bridge. No actor, AI, race, HUD, camera or backend modifications. Default player57km/h; NPC config must explicitly use55. Reverse15km/h. Propulsion fades near cap; no hidden velocity boost. External impacts/downhill require integration-era speed policy.
+
+Stiffness mass*980/8 kg/s^2 per wheel; damping1.6*sqrt(k*m/4) kg/s. Wheel inertia3kg disk at configured radius. Force units kg*cm/s^2. Contact point forces create yaw/pitch/roll. No flexible chassis joints, drivetrain gears, aero downforce or gyroscopic dynamics. Airborne contacts contribute no tire/support force. Numerical safety fails transactionally above6000cm/s,30rad/s,2000rad/s wheel or invalid inputs. Step<=1/120s; no live scheduler yet.
+
+Files KartExperimentalVehicle.h/.cpp, Tests/KartPhysicsStage7Tests.cpp. Builds and tests pending. Do not claim validated or enable Custom until results are documented.
+
+Focused1 passed baseline acceleration/braking/turning/reverse/surface/recovery tests. Expanded PhysicsFinal retained one failed test: low-grip driven-wheel speed exceeded2000rad/s while chassis stayed slow. Corrected by reducing engine torque based on both chassis speed and wheel tread speed; safety thresholds/tests unchanged. FullRegression running after this bounded fix.
+Measured initial straight56.6474km/h; reverse14.9240; two-second asphalt21.8396 vs grass12.9136. High-speed grip response: baseline yaw0.505417rad/s; half front grip0.236429 (understeer tendency); half rear grip-2.791147 after spin (oversteer sensitivity, not a recommended gameplay calibration). Low/high steer bounded. These are synthetic flat-ground fixtures, not human handling validation.
+
+Final acceptance: FullRegression26/26 PASS,0 failed/skipped,159.04s after torque-governor correction. Editor final5.65s PASS; standalone76.31s PASS. Low-grip fixture now completes with peak6.1106km/h and angular2.2182rad/s: stable but slippery/spin-prone, human handling tuning remains. No actor integration or manual driving verification. Stage7 isolated model complete; its ground-sampling and collision coupling still require Stage9. Run Session Frontend RoadToF1.Physics.Stage7Vehicle to reproduce.

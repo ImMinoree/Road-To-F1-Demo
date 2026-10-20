@@ -146,7 +146,7 @@ void URaceLoopWidget::InitializeKartHUD()
     Lap = Metric(TEXT("LAP"), TEXT("0 / 3"));
     LapTimer = Metric(TEXT("LAP TIME"), TEXT("00:00.000"));
     SpeedPanel = Panel(TEXT("PermanentSpeed"), 126, FAnchors(1, 1), FVector2D(1, 1), FVector2D(-24, -24), Width, Lines);
-    Speed = AddLine(Lines, TEXT("0.0"), 30); AddLine(Lines, TEXT("mph"), 11)->SetColorAndOpacity(Accent);
+    Speed = AddLine(Lines, TEXT("0.0"), 30); SpeedUnit=AddLine(Lines, TEXT("mph / LEGACY"), 10);SpeedUnit->SetColorAndOpacity(Accent);
 
     USizeBox* CaptionWidth = WidgetTree->ConstructWidget<USizeBox>(); CaptionWidth->SetWidthOverride(480);
     auto* CaptionSlot = Canvas->AddChildToCanvas(CaptionWidth); CaptionSlot->SetAnchors(FAnchors(.5f, 0)); CaptionSlot->SetAlignment(FVector2D(.5f, 0)); CaptionSlot->SetPosition(FVector2D(0, 24)); CaptionSlot->SetAutoSize(true);
@@ -254,7 +254,11 @@ void URaceLoopWidget::RefreshRaceData(const FGeometry& Geometry)
     BriefLap->SetText(FText::FromString(FString::Printf(TEXT("LAP %d / %d\nSTART GRID 20 / 20"), P.CurrentLap(), P.TargetLaps)));
     TowerLap->SetText(FText::FromString(FString::Printf(TEXT("LAP %d / %d"), P.CurrentLap(), P.TargetLaps)));
     const AKartPawn* Kart = Cast<AKartPawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-    if (Kart) Speed->SetText(FText::FromString(FString::Printf(TEXT("%.1f"), FMath::Abs(Kart->GetSpeedKmh()) * .621371f)));
+    if (Kart)
+    {
+        Speed->SetText(FText::FromString(FString::Printf(TEXT("%.1f"), FMath::Abs(Kart->GetSpeedKmh()) * .621371f)));
+        if(SpeedUnit)SpeedUnit->SetText(FText::FromString(Kart->GetPhysicsBackend()==EKartPhysicsBackend::Custom?TEXT("mph / CUSTOM"):TEXT("mph / LEGACY")));
+    }
     FString State = P.bFinished ? TEXT("FINISHED  /  TOTAL ") + FormatRaceTime(P.TotalTime(Now)) : !P.bStarted ? TEXT("READY  /  CROSS START") : FString::Printf(TEXT("NEXT %s  /  F5 RESTART"), P.NextCheckpoint < P.CheckpointCount ? *FString::Printf(TEXT("CP%d"), P.NextCheckpoint + 1) : TEXT("LAP LINE"));
     if (!P.bFinished && Kart && Kart->IsBurning()) State = TEXT("RECOVERING  /  GIVE TRAFFIC ROOM");
     Status->SetText(FText::FromString(!Race->IsRaceAvailable() ? Race->GetStatusMessage() : State));

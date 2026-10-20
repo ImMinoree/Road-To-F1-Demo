@@ -1,0 +1,18 @@
+{
+  "stage": 2,
+  "branch": "visual-overhaul-first-person",
+  "head": "545ac69cd22517cd5b961152fe014e17be908179",
+  "editorBuild": "PASS",
+  "standaloneBuild": "PASS",
+  "automationPassed": 21,
+  "automationFailed": 0,
+  "automationNotRun": 0,
+  "automationSeconds": 137.01895141601562,
+  "stressProxies": 500,
+  "oracleChecks": 26,
+  "liveCustomEnabled": false,
+  "manualVisualTest": "Required",
+  "committed": false,
+  "pushed": false,
+  "merged": false
+}

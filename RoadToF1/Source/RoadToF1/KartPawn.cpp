@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "KartRaceDirector.h"
 #include "KartTrainingRecorder.h"
+#include "KartPhysicsWorldSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
@@ -14,6 +15,8 @@
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Engine/Engine.h"
+#include "EngineUtils.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/PointLightComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -37,7 +40,7 @@ AKartPawn::AKartPawn()
         // Imported kart points along -Y; align it with the pawn's +X forward axis.
         Piece->SetRelativeRotation(FRotator(0, 90, 0));
         Piece->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        ConstructorHelpers::FObjectFinder<UStaticMesh> Asset(*FString::Printf(TEXT("/Game/RoadToF1/Art/SouthGardaV01/Meshes/Kart_%s.Kart_%s"), Name, Name));
+        ConstructorHelpers::FObjectFinder<UStaticMesh> Asset(*FString::Printf(TEXT("/Game/RoadToF1/Art/VisualV01/Meshes/Kart_%s.Kart_%s"), Name, Name));
         if (Asset.Succeeded()) Piece->SetStaticMesh(Asset.Object);
         Art.Add(Piece);
     }
@@ -51,6 +54,27 @@ AKartPawn::AKartPawn()
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     Camera->SetupAttachment(Boom);
     Camera->FieldOfView = 80;
+    EyeCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("DriverEyeCamera"));
+    EyeCamera->SetupAttachment(Body);
+    EyeCamera->SetRelativeLocation(ViewSettings.EyePosition);
+    EyeCamera->SetRelativeRotation(FRotator(ViewSettings.EyePitch,0,0));
+    EyeCamera->FieldOfView = ViewSettings.LowSpeedFOV;
+    Camera->SetAutoActivate(false);
+    WheelMount=CreateDefaultSubobject<USceneComponent>(TEXT("SteeringWheelMount"));
+    WheelMount->SetupAttachment(Body);
+    WheelMount->SetRelativeLocation(FVector(24,0,36));
+    WheelMount->SetRelativeRotation(FRotator(-40,0,0));
+    WheelSpin=CreateDefaultSubobject<USceneComponent>(TEXT("SteeringWheelSpin"));
+    WheelSpin->SetupAttachment(WheelMount);
+    for(const TCHAR* Name:{TEXT("Rubber"),TEXT("Aluminium"),TEXT("Engine")})
+    {
+        auto* Piece=CreateDefaultSubobject<UStaticMeshComponent>(*FString::Printf(TEXT("Wheel_%s"),Name));
+        Piece->SetupAttachment(WheelSpin);Piece->SetRelativeRotation(FRotator(0,90,0));
+        Piece->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        ConstructorHelpers::FObjectFinder<UStaticMesh> Mesh(*FString::Printf(TEXT("/Game/RoadToF1/Art/VisualV01/Meshes/Wheel_%s.Wheel_%s"),Name,Name));
+        if(Mesh.Succeeded())Piece->SetStaticMesh(Mesh.Object);
+        WheelArt.Add(Piece);
+    }
     const TCHAR* DriverNames[] = {TEXT("Suit"), TEXT("SuitAccent"), TEXT("Helmet"), TEXT("Visor"), TEXT("Boots"), TEXT("Gloves")};
     for (const TCHAR* Name : DriverNames)
     {
@@ -143,6 +167,7 @@ void AKartPawn::BeginPlay()
 
 void AKartPawn::ConfigureRacer(int32 Index, bool bOpponent)
 {
+    bOpponentRacer=bOpponent;
     SpeedLimitKmh = bOpponent ? 55 : 57;
     static const TCHAR* Names[] = {TEXT("YOU"), TEXT("Luca Rossi"), TEXT("Noah Weber"), TEXT("Maya Patel"), TEXT("Leo Martin"), TEXT("Eva Novak"), TEXT("Kai Tanaka"), TEXT("Zara Khan"), TEXT("Finn Walsh"), TEXT("Mila Costa"), TEXT("Theo Laurent"), TEXT("Aria Singh"), TEXT("Hugo Silva"), TEXT("Nina Berg"), TEXT("Owen Clarke"), TEXT("Sara Malik"), TEXT("Alex Chen"), TEXT("Isla Reed"), TEXT("Enzo Romano"), TEXT("Freya Olsen")};
     DriverName = Names[FMath::Clamp(Index, 0, 19)];
@@ -162,6 +187,7 @@ void AKartPawn::ConfigureRacer(int32 Index, bool bOpponent)
         Boom->SetComponentTickEnabled(false);
         Camera->Deactivate();
     }
+    ApplyCameraMode();
 }
 
 int32 AKartPawn::GetDriverMeshCount() const
@@ -189,7 +215,26 @@ void AKartPawn::SetupPlayerInputComponent(UInputComponent* Input)
     BindHeldKey(EKeys::D, &Right);
     Input->BindKey(EKeys::SpaceBar, IE_Pressed, this, &AKartPawn::BrakePressed);
     Input->BindKey(EKeys::SpaceBar, IE_Released, this, &AKartPawn::BrakeReleased);
+    Input->BindKey(EKeys::V, IE_Pressed, this, &AKartPawn::ToggleCamera);
     Input->BindKey(EKeys::F9, IE_Pressed, this, &AKartPawn::ToggleTrainingRecording);
+#if !UE_BUILD_SHIPPING
+    FInputKeyBinding PhysicsKey(FInputChord(EKeys::F10),IE_Pressed);
+    PhysicsKey.KeyDelegate.GetDelegateForManualSet().BindLambda([this]()
+    {
+        auto* Physics=GetWorld()->GetSubsystem<UKartPhysicsWorldSubsystem>();
+        bool Ok=false;
+        if(Physics->IsFleetKart(*this))Ok=Physics->ReleaseFleet();
+        else
+        {
+            TArray<AKartPawn*> Karts;for(TActorIterator<AKartPawn> It(GetWorld());It;++It)Karts.Add(*It);
+            Ok=Physics->SelectFleet(Karts,true);
+        }
+        if(GEngine)GEngine->AddOnScreenDebugMessage(71010,6,Ok?FColor::Cyan:FColor::Yellow,
+            Ok?(Physics->IsFleetKart(*this)?TEXT("CUSTOM physics active (experimental)"):TEXT("LEGACY physics active")):
+            FString(TEXT("Physics switch rejected; restart with F5, then F10. "))+Physics->GetFleetFailure());
+    });
+    Input->KeyBindings.Add(PhysicsKey);
+#endif
 }
 
 void AKartPawn::ToggleTrainingRecording()
@@ -212,7 +257,15 @@ void AKartPawn::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
     UpdateAudioAndNumber(DeltaSeconds);
+    if(PhysicsBackend==EKartPhysicsBackend::Custom)
+    {
+        auto* Physics=GetWorld()->GetSubsystem<UKartPhysicsWorldSubsystem>();
+        if(!Physics->IsFleetKart(*this))Physics->AdvanceTestKart(*this,DeltaSeconds);
+        return; // Exclusive owner: never enter Legacy swept movement or physical incident response.
+    }
     // Bounded substeps keep swept movement, braking and steering stable during hitches.
+    bool ViewKerb=false;
+    const bool SampleKerb=IsLocallyControlled() && bFirstPerson;
     float Remaining = FMath::Min(DeltaSeconds, .25f);
     while (Remaining > UE_SMALL_NUMBER)
     {
@@ -239,7 +292,10 @@ void AKartPawn::Tick(float DeltaSeconds)
                 FHitResult Support;
                 if (GetWorld()->LineTraceSingleByObjectType(Support, Probe + FVector(0, 0, 40), Probe - FVector(0, 0, 65), GroundObjects, Query)
                     && Support.Normal.Z > .55f && Support.ImpactPoint.Z <= Position.Z - 22 + 12)
+                {
                     SupportHeight = FMath::Max(SupportHeight, Support.ImpactPoint.Z);
+                    if(SampleKerb && Support.GetActor() && Support.GetActor()->ActorHasTag(TEXT("VisualKerb")))ViewKerb=true;
+                }
             }
             const float Rise = SupportHeight + 22 - Position.Z;
             if (Rise > 0)
@@ -288,6 +344,7 @@ void AKartPawn::Tick(float DeltaSeconds)
             else VerticalSpeed = 0;
         }
     }
+    UpdateDrivingView(DeltaSeconds, ViewKerb);
 }
 
 FVector AKartPawn::GetCollisionHalfExtent() const { return Body->GetScaledBoxExtent(); }
@@ -312,9 +369,11 @@ void AKartPawn::ResetKart()
     CollisionCount = 0;
     UpdateIncident(0);
     SetDriveInput(0, 0);
+    ResetDrivingView();
     Boom->bEnableCameraLag = false;
     Boom->TickComponent(0, LEVELTICK_All, nullptr);
     Boom->bEnableCameraLag = true;
+    if(PhysicsBackend==EKartPhysicsBackend::Custom)GetWorld()->GetSubsystem<UKartPhysicsWorldSubsystem>()->ResetTestKart(*this);
 }
 
 void AKartPawn::ReceiveCollision(float ImpactSpeed, const FVector& Normal)
@@ -322,10 +381,10 @@ void AKartPawn::ReceiveCollision(float ImpactSpeed, const FVector& Normal)
     if (bRaceFinished || CollisionCooldown > 0 || ImpactSpeed < 100) return;
     CollisionCooldown = 1;
     ++CollisionCount;
-    Speed *= .25f;
+    if(PhysicsBackend==EKartPhysicsBackend::Legacy)Speed *= .25f;
     StunSeconds = FMath::Clamp(ImpactSpeed / 1500.f, .15f, 1.f);
     const float Side = FVector::DotProduct(Normal, GetActorRightVector());
-    AddActorWorldRotation(FRotator(0, FMath::Clamp(Side * ImpactSpeed / 70.f, -12.f, 12.f), 0));
+    if(PhysicsBackend==EKartPhysicsBackend::Legacy)AddActorWorldRotation(FRotator(0, FMath::Clamp(Side * ImpactSpeed / 70.f, -12.f, 12.f), 0));
     if (ImpactSpeed >= 700) FireSeconds = 6;
 }
 

@@ -1,0 +1,16 @@
+Current 2026-10-19: numerical Stage9 recovery passes; full31/31, both Development builds pass. Overall Stage9 blocked by actual mesh coverage (12 unsupported components) and missing shared multi-kart coordinator. Custom gate remains false; Legacy default. Stage10 not started. Branch visual-overhaul-first-person HEADd953f2a; Stage9 uncommitted. Read FINAL_REPORT.md and ../PhysicsStage9/README.md. No push/merge. Next: validated real-track collision adapter, then single/multi-kart acceptance. Preserve all passing regressions and existing work.
+
+## 2026-10-19 — Stage9 static-mesh coverage extension (in progress)
+- Current branch/HEAD preserved: visual-overhaul-first-person d953f2a; existing recovery changes retained. No original-worktree or asset edits.
+- Actual inspection corrected the prior gross count:11 physical cooked triangle meshes (35,724 triangles) plus the editor construction brush. All physical mesh sources use complex-as-simple collision. Only the nonphysical default editor brush is excluded.
+- Added immutable cooked-collision snapshot, median static triangle BVH, finite triangle/OBB SAT+clipping and query-only mesh motion with conservative advancement, split stabilization and preserved remaining time. Legacy path stays unchanged; Custom production gate remains closed.
+- Editor build PASS160.57s after fixing a missing FWeakObjectPtr include. Existing HUD InputKey warnings only. Actual-map geometry/impact/grid-motion tests and prior Stage9 fixtures are running in MeshMotion1; coverage/movement not yet accepted. Shared fleet integration not started pending those results.
+`nStatic MeshMotion2:7/7 pass. Shared FleetContacts5:2/2 pass (chain peak overlap0.003870413cm; unchanged0.2cm gate). FleetProgression1:2/5/10/20 deterministic fixtures pass. ActualWorldFleet1:actual actors2/5/10/20 movement/reset/camera/fallback pass. World coordinator Editor build PASS218.48s. Live PIE/input/HUD/telemetry/physical-lap validation pending; experimental admission remains closed.
+
+Latest handoff2026-10-19: FleetFull1 40/41; only live physical-lap CP2 stall fails. Prior31 regressions intact. Cooked mesh coverage/shared fleet/control fixtures implemented and pass. Stage9 remains incomplete; Stage10 not started; no Custom human readiness, no commit/push/merge. Read repository-root CODEX_HANDOFF_STAGE9_2026-10-19.md and current FINAL_REPORT.md. No validation process remains running.
+
+Stage9 PASS:Stage9Acceptance1 43/43,Editor18.64s/game115.89s,diff/whitespace clean. Actual chassis static underside correction + Custom physical braking planning resolve stall. Solo/rejoin/live20/control and prior31 regressions pass. Stage10 next. User authorized eventual push/merge after testing; not performed yet.
+
+CURRENT: Stage10 AcceptanceCandidate2 51/51 PASS; all19+player three-lap completion at30/60FPS. Explicit F10 admission enabled, Legacy default. Final admission/standalone validation pending; see FINAL_REPORT.md and PhysicsStage10/README.md. No remote changes yet.
+
+FINAL: FinalAdmission1/1 PASS without automation bypass; Editor/standalone/diff checks PASS. Stage10 complete for experimental Development opt-in. Read PhysicsStage10/README.md; human feel and release packaging remain unverified.

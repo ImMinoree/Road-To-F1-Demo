@@ -1,0 +1,15 @@
+{
+  "stage9": "PASS",
+  "stage10": "PASS",
+  "full_suite": "AcceptanceCandidate2/index.json",
+  "passed": 51,
+  "failed": 0,
+  "final_admission": "FinalAdmission/index.json",
+  "admission_passed": 1,
+  "editor_build_seconds": 18.31,
+  "standalone_build_seconds": 62.41,
+  "legacy_default": true,
+  "custom_explicit_development_opt_in": true,
+  "human_playtested": false,
+  "shipping_validated": false
+}

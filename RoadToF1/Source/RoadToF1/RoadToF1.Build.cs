@@ -30,7 +30,7 @@ public class RoadToF1 : ModuleRules
 			"RoadToF1/Variant_TimeTrial/UI"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "Json" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Json", "Chaos" });
 
 		if (Target.bBuildEditor)
 		{

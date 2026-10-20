@@ -16,6 +16,9 @@ RoadToF1/*.slnx
 # IDEs
 RoadToF1/.idea/
 
+#Refrence
+Refrence/
+
 # OS junk
 .DS_Store
 Thumbs.db
@@ -91,3 +94,8 @@ TestResults/DefenseIncident/Baseline/*
 !TestResults/DefenseIncident/Baseline/index.json
 TestResults/DefenseIncident/Final/*
 !TestResults/DefenseIncident/Final/index.json
+
+# Visual foundation: keep final JSON and captures, omit generated report UI.
+TestResults/VisualOverhaul/Automation/*
+!TestResults/VisualOverhaul/Automation/index.json
+TestResults/VisualOverhaul/geometry-check.json

@@ -3,6 +3,8 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/GameModeBase.h"
 #include "KartEngineSound.h"
+#include "KartViewSettings.h"
+#include "KartPhysicsBackend.h"
 #include "KartPawn.generated.h"
 
 /** First playable kart: swept arcade movement on traced ground, using the authored art. */
@@ -12,11 +14,22 @@ class ROADTOF1_API AKartPawn : public APawn
     GENERATED_BODY()
 public:
     AKartPawn();
+    // Legacy by default. Custom is restricted to an explicitly tagged, single-kart test world.
+    // No editable backend property can bypass world/stationary admission checks.
+    UFUNCTION(BlueprintPure, Category="Kart|Physics")
+    EKartPhysicsBackend GetPhysicsBackend() const { return PhysicsBackend; }
+    UFUNCTION(BlueprintCallable, Category="Kart|Physics")
+    bool TrySelectPhysicsBackend(EKartPhysicsBackend Requested);
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
     virtual void SetupPlayerInputComponent(UInputComponent* Input) override;
-    virtual FVector GetVelocity() const override { return GetActorForwardVector() * Speed; }
+    virtual FVector GetVelocity() const override { return PhysicsBackend==EKartPhysicsBackend::Custom?CustomVelocity:GetActorForwardVector()*Speed; }
     void ResetKart();
+    void ToggleCamera();
+    bool IsFirstPerson() const { return bFirstPerson; }
+    class UCameraComponent* GetDrivingCamera() const;
+    float GetVisualSteeringAngle() const { return SmoothedSteering * 65.f; }
+    UPROPERTY(EditAnywhere, Category="Presentation|Camera") FKartViewSettings ViewSettings;
     void SetRaceFinished();
     bool IsRaceFinished() const { return bRaceFinished; }
     bool IsRecoveringFromContact() const { return StunSeconds > 0 || FireSeconds > 0; }
@@ -36,7 +49,19 @@ public:
     bool IsBrakeHeld() const { return bBrake; }
     void ReceiveCollision(float ImpactSpeed, const FVector& Normal);
 private:
+    friend class UKartPhysicsWorldSubsystem;
+    EKartPhysicsBackend PhysicsBackend=EKartPhysicsBackend::Legacy;
+    FVector CustomVelocity=FVector::ZeroVector;
     void UpdateAudioAndNumber(float Dt);
+    void ApplyCameraMode();
+    void UpdateDrivingView(float Dt, bool Kerb);
+    void ResetDrivingView();
+    UPROPERTY(VisibleAnywhere) TObjectPtr<class UCameraComponent> EyeCamera;
+    UPROPERTY(VisibleAnywhere) TObjectPtr<class USceneComponent> WheelMount;
+    UPROPERTY(VisibleAnywhere) TObjectPtr<class USceneComponent> WheelSpin;
+    UPROPERTY(VisibleAnywhere) TArray<TObjectPtr<class UStaticMeshComponent>> WheelArt;
+    bool bFirstPerson = true, bOpponentRacer = false;
+    float ViewClock = 0, PreviousViewSpeed = 0, ViewPitch = 0, ViewRoll = 0, KerbBlend = 0;
     FKartEngineSound EngineSynth;
     UPROPERTY(Transient) TObjectPtr<class USoundWaveProcedural> EngineWave;
     UPROPERTY(VisibleAnywhere) TObjectPtr<class UAudioComponent> EngineAudio;

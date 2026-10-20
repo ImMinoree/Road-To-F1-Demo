@@ -9,6 +9,8 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "KartPawn.h"
+#include "KartPhysicsDrivingEnvelope.h"
+#include "KartPhysicsWorldSubsystem.h"
 #include "RaceLoopSubsystem.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -562,6 +564,8 @@ void AKartRaceDirector::Tick(float Dt)
         }
         // Keep a gap behind the kart ahead. Use the free alternate lane when
         // possible, rather than driving straight into a stopped racer.
+        if(Kart->GetPhysicsBackend()==EKartPhysicsBackend::Custom)
+            TargetSpeed=FMath::Min(TargetSpeed,float(KartPhysicsDriving::SpeedEnvelope(RoutePoints,Near,Lane,55./.036,State.CornerSkill)));
         if (bPaceDiagnostics) State.Pace.Corner = TargetSpeed;
         const float RawTrafficLimit = FMath::Max(0.f, SafeSpeed(Lane, true));
         const bool IncidentNow=bObstructionAhead || bIncidentAhead;
@@ -608,9 +612,13 @@ void AKartRaceDirector::Tick(float Dt)
         FVector Target = LanePoint(Near + (bPassingObstruction && Speed < 500 ? 1 : Look), Lane);
         if (bGateApproach && bGateLaneClear && (!bStraight || FMath::Abs(GateLocal.Y)>Gate.Extent.Y-OwnExtent.Y-TrafficSafetyMargin) && -GateLocal.X < Look * Spacing + 300)
             Target = Gate.Transform.TransformPosition(FVector(150, FMath::Clamp(State.Lane, -Racecraft::LaneLimit, Racecraft::LaneLimit), 0));
-        const FVector LocalTarget = Kart->GetActorTransform().InverseTransformPosition(Target);
+        const FVector LocalTarget = Kart->GetPhysicsBackend()==EKartPhysicsBackend::Custom?
+            FRotator(0,Kart->GetActorRotation().Yaw,0).UnrotateVector(Target-P):Kart->GetActorTransform().InverseTransformPosition(Target);
         const float Curvature = 2 * LocalTarget.Y / FMath::Max(1., LocalTarget.SizeSquared2D());
-        const float Steering = FMath::Clamp(FMath::RadiansToDegrees(FMath::Atan(Curvature * 104)) * (1 + Speed / 1400) / 22, -1.f, 1.f);
+        if(Kart->GetPhysicsBackend()==EKartPhysicsBackend::Custom && FMath::Abs(Curvature)>1.e-7f)
+            TargetSpeed=FMath::Min(TargetSpeed,FMath::Sqrt(350.f*FMath::Clamp(State.CornerSkill,.9f,1.1f)/FMath::Abs(Curvature)));
+        float Steering = FMath::Clamp(FMath::RadiansToDegrees(FMath::Atan(Curvature * 104)) * (1 + Speed / 1400) / 22, -1.f, 1.f);
+        if(Kart->GetPhysicsBackend()==EKartPhysicsBackend::Custom)Steering=KartPhysicsDriving::SteeringTowardTarget(LocalTarget,Steering);
         if (LocalTarget.X < 100 || FMath::Abs(FMath::Atan2(LocalTarget.Y, LocalTarget.X)) > .65f) TargetSpeed = FMath::Min(TargetSpeed, 250.f);
         if (bPaceDiagnostics)
         {
@@ -629,7 +637,9 @@ void AKartRaceDirector::Tick(float Dt)
         State.StalledSeconds = Speed < 30 && !bLaunching && ((!bQueueAhead && TargetSpeed > 100) || TrappedAtStaticObstacle) ? State.StalledSeconds + Dt : 0;
         auto RearClear = [&]()
         {
-            const FVector Back = -Kart->GetActorForwardVector();
+            // A Custom chassis pitches on suspension; its retreat follows the
+            // ground plane, not a nose-pitch ray down into the road behind it.
+            const FVector Back = -(Kart->GetPhysicsBackend()==EKartPhysicsBackend::Custom?Kart->GetActorForwardVector().GetSafeNormal2D():Kart->GetActorForwardVector());
             for (const AKartPawn* Other : Traffic)
             {
                 if (Other == Kart || Other->IsRaceFinished()) continue;
@@ -642,8 +652,16 @@ void AKartRaceDirector::Tick(float Dt)
             }
             FHitResult Hit;
             FCollisionQueryParams Query(SCENE_QUERY_STAT(KartReverseClearance), false, Kart);
-            return !GetWorld()->SweepSingleByObjectType(Hit, P, P + Back * Racecraft::ReverseClearance, Kart->GetActorQuat(),
-                FCollisionObjectQueryParams(ECC_WorldStatic), FCollisionShape::MakeBox(OwnExtent), Query);
+            FVector QueryStart=P,QueryExtent=OwnExtent;
+            if(Kart->GetPhysicsBackend()==EKartPhysicsBackend::Custom)
+            {
+                const auto* Physics=GetWorld()->GetSubsystem<UKartPhysicsWorldSubsystem>();
+                return Physics && Physics->CanTranslateStaticChassis(*Kart,Back*Racecraft::ReverseClearance);
+            }
+            // Physical kart occupancy above still uses the full tire envelope.
+            // Static queries must match the selected backend's solid chassis.
+            return !GetWorld()->SweepSingleByObjectType(Hit, QueryStart, QueryStart + Back * Racecraft::ReverseClearance, Kart->GetActorQuat(),
+                FCollisionObjectQueryParams(ECC_WorldStatic), FCollisionShape::MakeBox(QueryExtent), Query);
         };
         if (State.StalledSeconds > (TrappedAtStaticObstacle ? 1.5f : Racecraft::StuckDelay) && State.RecoverySeconds <= 0 && State.RecoveryCooldown <= 0 && !bIncidentAhead && RearClear())
         {

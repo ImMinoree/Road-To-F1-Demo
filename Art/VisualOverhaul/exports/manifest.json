@@ -1,0 +1,128 @@
+{
+  "kart": [
+    {
+      "file": "Kart_Chassis.obj",
+      "material": "Chassis",
+      "color": [
+        0.8000028754620482,
+        0.13726013895563455,
+        0.20392738828211215
+      ],
+      "metalness": 0.7,
+      "roughness": 0.32
+    },
+    {
+      "file": "Kart_Rubber.obj",
+      "material": "Rubber",
+      "color": [
+        0.082357421664284,
+        0.09020068575479182,
+        0.10196556928425596
+      ],
+      "metalness": 0,
+      "roughness": 0.88
+    },
+    {
+      "file": "Kart_Aluminium.obj",
+      "material": "Aluminium",
+      "color": [
+        0.7215724346409564,
+        0.7411800562531033,
+        0.7607876701382805
+      ],
+      "metalness": 0.88,
+      "roughness": 0.3
+    },
+    {
+      "file": "Kart_Engine.obj",
+      "material": "Engine",
+      "color": [
+        0.2431432832430061,
+        0.26667277981682225,
+        0.29412382445238106
+      ],
+      "metalness": 0.75,
+      "roughness": 0.37
+    },
+    {
+      "file": "Kart_Fairing.obj",
+      "material": "Fairing",
+      "color": [
+        0.7882383169482342,
+        0.09804394306321879,
+        0.15686818699537927
+      ],
+      "metalness": 0.15,
+      "roughness": 0.26
+    },
+    {
+      "file": "Kart_White.obj",
+      "material": "White",
+      "color": [
+        0.9411773850235038,
+        0.9294128554610764,
+        0.890197740518285
+      ],
+      "metalness": 0,
+      "roughness": 0.5
+    },
+    {
+      "file": "Kart_Carbon.obj",
+      "material": "Carbon",
+      "color": [
+        0.14510336183816983,
+        0.16471139792155115,
+        0.16863300169443166
+      ],
+      "metalness": 0.15,
+      "roughness": 0.42
+    },
+    {
+      "file": "Kart_Chain.obj",
+      "material": "Chain",
+      "color": [
+        0.6509849297375332,
+        0.5411819149750787,
+        0.25098645195783614
+      ],
+      "metalness": 0.85,
+      "roughness": 0.4
+    }
+  ],
+  "wheel": [
+    {
+      "file": "Wheel_Rubber.obj",
+      "material": "Rubber",
+      "color": [
+        0.082357421664284,
+        0.09020068575479182,
+        0.10196556928425596
+      ],
+      "metalness": 0,
+      "roughness": 0.88
+    },
+    {
+      "file": "Wheel_Aluminium.obj",
+      "material": "Aluminium",
+      "color": [
+        0.7215724346409564,
+        0.7411800562531033,
+        0.7607876701382805
+      ],
+      "metalness": 0.88,
+      "roughness": 0.3
+    },
+    {
+      "file": "Wheel_Engine.obj",
+      "material": "Engine",
+      "color": [
+        0.2431432832430061,
+        0.26667277981682225,
+        0.29412382445238106
+      ],
+      "metalness": 0.75,
+      "roughness": 0.37
+    }
+  ],
+  "notice": "Original Road to F1 source. Wheel extracted with local pivot; remaining kart geometry unchanged."
+}

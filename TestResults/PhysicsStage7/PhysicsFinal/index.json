@@ -1,0 +1,468 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "DESKTOP-ERDHE74",
+			"instance": "AFD5E04E42308A7D80DB5AA2FABCBDD2",
+			"instanceName": "DESKTOP-ERDHE74-13924",
+			"platform": "WindowsEditor",
+			"oSVersion": "Windows 10 (22H2) [10.0.19045.6466] ",
+			"model": "Default",
+			"gPU": "NVIDIA GeForce RTX 3080",
+			"cPUModel": "Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz",
+			"rAMInGB": 32,
+			"renderMode": "SM6",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.10.19-02.13.25",
+	"succeeded": 7,
+	"succeededWithWarnings": 0,
+	"failed": 1,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 1.003165602684021,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "Stage0Ownership",
+			"fullTestPath": "RoadToF1.Physics.Stage0Ownership",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AFD5E04E42308A7D80DB5AA2FABCBDD2"
+			],
+			"duration": 0.13425979018211365,
+			"dateTime": "2026.10.19-02.13.24",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage1RigidBody",
+			"fullTestPath": "RoadToF1.Physics.Stage1RigidBody",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AFD5E04E42308A7D80DB5AA2FABCBDD2"
+			],
+			"duration": 0.010697700083255768,
+			"dateTime": "2026.10.19-02.13.24",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Analytic check: 2kg, 10N, dt=0.1s -> v=50cm/s, x=5cm (semi-implicit Euler).",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.24"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Fixed dt=1/60: x=254.166666667cm, v=500.000000000cm/s; continuous x=250cm; first-order position error expected.",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.24"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Fixed dt=1/120: x=252.083333333cm, v=500.000000000cm/s; continuous x=250cm; first-order position error expected.",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.24"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage2Broadphase",
+			"fullTestPath": "RoadToF1.Physics.Stage2Broadphase",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AFD5E04E42308A7D80DB5AA2FABCBDD2"
+			],
+			"duration": 0.15884000062942505,
+			"dateTime": "2026.10.19-02.13.24",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "STAGE2_STRESS seed=240217 proxies=500 snapshots=13 updates=6000 removals/replacements=4 exact_oracle_checks=26 opposite_order=PASS repeat=PASS height=15 nodes=999 reinserts=5935 total_pair_node_visits=196362 final_pairs=120",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.24"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage3Narrowphase",
+			"fullTestPath": "RoadToF1.Physics.Stage3Narrowphase",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AFD5E04E42308A7D80DB5AA2FABCBDD2"
+			],
+			"duration": 0.095545396208763123,
+			"dateTime": "2026.10.19-02.13.24",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "STAGE3_STRESS seed=381028 cases=180 intersections=119 failed=0 nonfinite=0 gjk_iterations=656 epa_iterations=795 max_depth_error_cm=8.8817842e-15 symmetric_sphere_epa=4",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.24"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "STAGE3_CURVED cases=120 hits=92 failures=0 max_depth_error_cm=4.99825764e-05",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.24"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage4Manifolds",
+			"fullTestPath": "RoadToF1.Physics.Stage4Manifolds",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AFD5E04E42308A7D80DB5AA2FABCBDD2"
+			],
+			"duration": 0.11285290122032166,
+			"dateTime": "2026.10.19-02.13.24",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "STAGE4_STRESS bodies=200 steps=12 active=99 reused=1364 new=636 invalidated=438 failures=0 max_points=4 edge_fixtures=55",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.24"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage5Solver",
+			"fullTestPath": "RoadToF1.Physics.Stage5Solver",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AFD5E04E42308A7D80DB5AA2FABCBDD2"
+			],
+			"duration": 0.18504029512405396,
+			"dateTime": "2026.10.19-02.13.24",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Rest 1200 steps: max depth 0.100000000 cm, speed 1.440000000 cm/s, residual 0.000000000 cm/s",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.24"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Rest 1200 steps: max depth 0.100000000 cm, speed 1.440000000 cm/s, residual 0.000000000 cm/s",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.24"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage6Materials",
+			"fullTestPath": "RoadToF1.Physics.Stage6Materials",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"AFD5E04E42308A7D80DB5AA2FABCBDD2"
+			],
+			"duration": 0.24239960312843323,
+			"dateTime": "2026.10.19-02.13.25",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Slide v0 200.0 a 0.0 final x 35.459594 speed 0.000000000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Slide v0 200.0 a 0.0 final x 35.459594 speed 0.000000000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Slide v0 0.0 a 100.0 final x 0.000000 speed 0.000000000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Stack max penetration 0.100000000 final speed 0.000061390",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				}
+			],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "Stage7Vehicle",
+			"fullTestPath": "RoadToF1.Physics.Stage7Vehicle",
+			"tags": [],
+			"state": "Fail",
+			"deviceInstance": [
+				"AFD5E04E42308A7D80DB5AA2FABCBDD2"
+			],
+			"duration": 0.063529901206493378,
+			"dateTime": "2026.10.19-02.13.25",
+			"entries": [
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Vehicle throttle 1.0 steer 0.00 surface 1 steps 2400 peak 56.6474 km/h final 56.6474 angular 0.0633",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Vehicle throttle 1.0 steer 0.00 surface 1 steps 2400 peak 56.6474 km/h final 56.6474 angular 0.0633",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Vehicle throttle -1.0 steer 0.00 surface 1 steps 1200 peak 14.9240 km/h final 14.9240 angular 0.0633",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Vehicle throttle 0.0 steer 0.00 surface 1 steps 1200 peak 0.0000 km/h final 0.0000 angular 0.0000",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Vehicle throttle 0.6 steer 0.30 surface 1 steps 1200 peak 50.6506 km/h final 50.6506 angular 0.8359",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Vehicle throttle 1.0 steer 0.00 surface 3 steps 240 peak 12.9136 km/h final 12.9136 angular 0.0395",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Vehicle throttle 1.0 steer 0.00 surface 1 steps 240 peak 21.8396 km/h final 21.8396 angular 0.0633",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Grip balance front 1.00 rear 1.00 initial 100.0 yaw 0.853366 rad/s steer 0.346831",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Grip balance front 1.00 rear 1.00 initial 1400.0 yaw 0.505417 rad/s steer 0.169877",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Grip balance front 0.50 rear 1.00 initial 1400.0 yaw 0.236429 rad/s steer 0.157769",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Grip balance front 1.00 rear 0.50 initial 1400.0 yaw -2.791147 rad/s steer 0.284568",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Error",
+						"message": "Expected 'Vehicle steps valid' to be true.",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "D:\\Boring\\GitHub\\Road-To-F1-Visual\\RoadToF1\\Source\\RoadToF1\\Tests\\KartPhysicsStage7Tests.cpp",
+					"lineNumber": 17,
+					"timestamp": "2026.10.19-02.13.25"
+				},
+				{
+					"event":
+					{
+						"type": "Info",
+						"message": "Vehicle throttle 1.0 steer 0.10 surface 5 steps 600 peak 2.9105 km/h final 2.9105 angular 0.0769",
+						"context": "",
+						"artifact": "00000000000000000000000000000000"
+					},
+					"filename": "",
+					"lineNumber": -1,
+					"timestamp": "2026.10.19-02.13.25"
+				}
+			],
+			"warnings": 0,
+			"errors": 1,
+			"artifacts": []
+		}
+	]
+}
